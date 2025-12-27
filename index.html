@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>PD – Gesetzbuch & Strafkatalog</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: #e5e7eb;
+  padding: 20px;
+}
+h1 { margin-bottom: 5px; }
+input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  margin: 15px 0;
+}
+.entry {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 12px;
+}
+.paragraf {
+  font-weight: bold;
+  color: #38bdf8;
+}
+.small {
+  font-size: 13px;
+  opacity: 0.9;
+}
+.tag {
+  display: inline-block;
+  background: #334155;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-right: 6px;
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<h1>🚓 PD – Gesetzbuch & Strafkatalog</h1>
+<p>Suche nach Paragraf, Vergehen oder Stichwort</p>
+
+<input id="search" placeholder="z. B. Diebstahl, §13 StVO, Handy, Rennen …">
+
+<div id="results"></div>
+
+<script>
+const laws = [
+
+/* ===================== STVO ===================== */
+{ p:"§1 Abs. 3 StVO", t:"Mitführpflicht missachtet", d:"Verbandtasche, Warndreieck oder Warnweste fehlt.", h:"-", g:"350 $", i:"OWi" },
+{ p:"§3 Abs. 2 StVO", t:"Stoppschild missachtet", d:"Nicht an Stoppschild gehalten.", h:"-", g:"200 $", i:"OWi" },
+{ p:"§5 Abs. 3 StVO", t:"Geschwindigkeitsüberschreitung 51–100 km/h", d:"Erhebliche Geschwindigkeitsüberschreitung.", h:"10", g:"750 $", i:"Fahrzeug + 2 Punkte" },
+{ p:"§9 StVO", t:"Falschparken", d:"Parken außerhalb zulässiger Flächen.", h:"-", g:"1000 $", i:"Abschleppen" },
+{ p:"§11 StVO", t:"Alkohol- / Drogeneinfluss", d:"Fahren unter Alkohol oder Drogen.", h:"15", g:"800 $", i:"Fahrzeug + 2 Punkte" },
+{ p:"§13 Abs. 6 StVO", t:"Fahrerflucht", d:"Unerlaubtes Entfernen vom Unfallort.", h:"-", g:"1000 $", i:"2 Punkte" },
+{ p:"§13 Abs. 7 StVO", t:"Handynutzung", d:"Handynutzung während der Fahrt.", h:"-", g:"150 $", i:"OWi" },
+
+/* ===================== STGB ===================== */
+{ p:"§2 StGB", t:"Diebstahl", d:"Wegnahme fremden Eigentums.", h:"20", g:"500 $", i:"Diebesgut zurückführen" },
+{ p:"§3 Abs. 4 StGB", t:"Schwerer bewaffneter Raub", d:"Raub mit Langwaffen.", h:"60", g:"2500 $", i:"Tatwaffen + Waffenschein" },
+{ p:"§7 Abs. 3 StGB", t:"Schwere Körperverletzung", d:"Körperverletzung mit Folgeschäden.", h:"35", g:"1500 $", i:"Tatwaffen" },
+{ p:"§9 Abs. 1 StGB", t:"Mord", d:"Vorsätzliche Tötung.", h:"70", g:"2000 $", i:"Tatwaffen + Waffenschein" },
+{ p:"§12 Abs. 2 StGB", t:"Widerstand gegen Beamte", d:"Gewalt oder Drohung gegen Beamte.", h:"30", g:"1000 $", i:"-" },
+{ p:"§15 StGB", t:"Vermummungsverbot", d:"Vermummung in der Öffentlichkeit.", h:"-", g:"350 $", i:"Personenkontrolle" },
+{ p:"§28 StGB", t:"Verbotene Kraftfahrzeugrennen", d:"Illegale Straßenrennen.", h:"20", g:"1250 $", i:"-" },
+{ p:"§30 StGB", t:"Brandstiftung", d:"Vorsätzliche Brandlegung.", h:"30", g:"700 $", i:"-" },
+
+/* ===================== BTMG ===================== */
+{ p:"§1 BtMG", t:"Besitz von Betäubungsmitteln", d:"Besitz illegaler Betäubungsmittel (außer Cannabis).", h:"10", g:"50 $ / Einheit", i:"BtM beschlagnahmen" },
+{ p:"§2 BtMG", t:"Handel mit Betäubungsmitteln", d:"Handel mit illegalen Betäubungsmitteln.", h:"40", g:"850 $", i:"BtM beschlagnahmen" },
+{ p:"§3 BtMG", t:"Konsum in Öffentlichkeit", d:"Konsum illegaler BtM in der Öffentlichkeit.", h:"20", g:"100 $", i:"-" },
+{ p:"§4 BtMG", t:"Herstellung von BtM", d:"Herstellung illegaler Betäubungsmittel.", h:"20", g:"250 $", i:"BtM + Baupläne" }
+
+];
+
+const input = document.getElementById("search");
+const results = document.getElementById("results");
+
+function render(list) {
+  results.innerHTML = "";
+  if (list.length === 0) {
+    results.innerHTML = "<p>Keine Treffer gefunden 🤷‍♂️</p>";
+    return;
+  }
+  list.forEach(l => {
+    results.innerHTML += `
+      <div class="entry">
+        <div class="paragraf">${l.p} – ${l.t}</div>
+        <p>${l.d}</p>
+        <div class="small">
+          <span class="tag">Haft: ${l.h}</span>
+          <span class="tag">Geld: ${l.g}</span>
+          <span class="tag">${l.i}</span>
+        </div>
+      </div>
+    `;
+  });
+}
+
+input.addEventListener("input", () => {
+  const q = input.value.toLowerCase();
+  render(laws.filter(l =>
+    l.t.toLowerCase().includes(q) ||
+    l.d.toLowerCase().includes(q) ||
+    l.p.toLowerCase().includes(q)
+  ));
+});
+
+render(laws);
+</script>
+
+</body>
+</html>
