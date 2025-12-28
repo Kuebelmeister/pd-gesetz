@@ -3,69 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <title>PD Strafenkatalog</title>
+
 <style>
 body {
     font-family: Arial, sans-serif;
-    background: #0f172a;
-    color: #e5e7eb;
-    margin: 0;
-    padding: 30px;
+    background:#0f172a;
+    color:#e5e7eb;
+    padding:30px;
 }
 
 .container {
-    max-width: 1100px;
-    margin: auto;
-    background: #020617;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    max-width:1200px;
+    margin:auto;
+    background:#020617;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 0 25px rgba(0,0,0,0.6);
 }
 
 h1 {
-    text-align: center;
-    margin-bottom: 20px;
+    text-align:center;
+    margin-bottom:20px;
 }
 
 .layout {
-    display: grid;
+    display:grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap:20px;
 }
 
 .list, .details {
-    background: #020617;
-    border: 1px solid #1e293b;
-    border-radius: 10px;
-    padding: 15px;
-    max-height: 600px;
-    overflow-y: auto;
+    border:1px solid #1e293b;
+    border-radius:10px;
+    padding:15px;
+    max-height:650px;
+    overflow-y:auto;
 }
 
 .item {
-    padding: 10px;
-    border-bottom: 1px solid #1e293b;
-    cursor: pointer;
+    padding:10px;
+    border-bottom:1px solid #1e293b;
+    cursor:pointer;
 }
 
 .item:hover {
-    background: #1e293b;
+    background:#1e293b;
 }
 
 .selected {
-    background: #2563eb;
+    background:#2563eb;
 }
 
 .summary {
-    margin-top: 15px;
-    padding: 10px;
-    background: #020617;
-    border-radius: 8px;
-    border: 1px solid #1e293b;
+    margin-top:15px;
+    padding:10px;
+    border:1px solid #1e293b;
+    border-radius:8px;
+}
+
+button {
+    margin-top:10px;
+    padding:8px 15px;
+    border:none;
+    border-radius:6px;
+    background:#dc2626;
+    color:white;
+    cursor:pointer;
+}
+button:hover {
+    background:#b91c1c;
 }
 </style>
 </head>
-<body>
 
+<body>
 <div class="container">
 <h1>🚓 Polizeilicher Strafenkatalog</h1>
 
@@ -77,25 +88,84 @@ h1 {
 <div id="selected"></div>
 
 <div class="summary">
-<strong>Gesamtstrafe:</strong><br>
+<strong>Gesamt:</strong><br>
 Haft: <span id="haft">0</span> HE<br>
 Geld: <span id="geld">0</span> $
 </div>
+
+<button onclick="resetAll()">Reset</button>
 </div>
 </div>
 </div>
 
 <script>
 const offences = [
-    { name:"§5 Abs.3 StVO – 51–100 km/h zu schnell", desc:"Erhebliche Geschwindigkeitsüberschreitung", haft:10, geld:750 },
-    { name:"§11 StVO – Alkohol/Drogen am Steuer", desc:"Führen eines Fahrzeugs unter Einfluss", haft:15, geld:800 },
-    { name:"§13 Abs.6 StVO – Fahrerflucht", desc:"Unerlaubtes Entfernen vom Unfallort", haft:0, geld:1000 },
-    { name:"§3 Abs.4 StGB – Schwerer bewaffneter Raub", desc:"Raub mit Langwaffen", haft:60, geld:2500 },
-    { name:"§7 Abs.3 StGB – Schwere Körperverletzung", desc:"Körperverletzung mit Folgeschäden", haft:35, geld:1500 },
-    { name:"§9 Abs.1 StGB – Mord", desc:"Vorsätzliche Tötung", haft:70, geld:2000 },
-    { name:"§30 StGB – Brandstiftung", desc:"Vorsätzliche Brandlegung", haft:30, geld:700 },
-    { name:"§2 BtMG – Handel mit Betäubungsmitteln", desc:"Illegaler Drogenhandel", haft:40, geld:850 },
-    { name:"§1 BtMG – Besitz von Betäubungsmitteln", desc:"Illegaler Drogenbesitz", haft:10, geld:50 }
+
+/* ================= STVO ================= */
+{ name:"§1 Abs.3 StVO – Mitführpflicht missachtet", desc:"Verbandtasche / Warndreieck / Warnweste fehlt", haft:0, geld:350 },
+{ name:"§2 Abs.1 StVO – Rechtsfahrgebot", desc:"Linke Spur ohne Überholen", haft:0, geld:200 },
+{ name:"§3 Abs.1 StVO – Einbahnstraße falsch", desc:"Fahren entgegen Einbahnstraße", haft:0, geld:200 },
+{ name:"§3 Abs.2 StVO – Stoppschild", desc:"Stoppschild missachtet", haft:0, geld:200 },
+{ name:"§3 Abs.2 StVO – Stoppschild mit Gefährdung", desc:"Stoppschild missachtet mit Gefährdung", haft:0, geld:500 },
+
+{ name:"§5 Abs.3 StVO – 1–20 km/h", desc:"Geschwindigkeitsüberschreitung", haft:0, geld:250 },
+{ name:"§5 Abs.3 StVO – 21–50 km/h", desc:"Erhöhte Geschwindigkeit", haft:0, geld:500 },
+{ name:"§5 Abs.3 StVO – 51–100 km/h", desc:"Starke Geschwindigkeitsüberschreitung", haft:10, geld:750 },
+{ name:"§5 Abs.3 StVO – ab 101 km/h", desc:"Extremes Rasen", haft:20, geld:1000 },
+
+{ name:"§6 StVO – Mindestabstand", desc:"Abstand nicht eingehalten", haft:0, geld:150 },
+{ name:"§7 StVO – Rechts überholen", desc:"Rechts überholt", haft:0, geld:200 },
+{ name:"§8 StVO – Vorfahrt mit Gefährdung", desc:"Rechts-vor-links missachtet", haft:0, geld:200 },
+{ name:"§8 StVO – Vorfahrt mit Schaden", desc:"Sachbeschädigung verursacht", haft:15, geld:250 },
+
+{ name:"§9 StVO – Falschparken", desc:"Unzulässiger Parkbereich", haft:0, geld:1000 },
+{ name:"§9 Abs.3.3 StVO – Parken Highway", desc:"Parken auf High-/Freeway", haft:10, geld:1250 },
+{ name:"§9 Abs.1.8 StVO – Unerlaubte Landung", desc:"Landung ohne Genehmigung", haft:0, geld:2000 },
+
+{ name:"§10 StVO – Sonderrechte missbraucht", desc:"Blaulicht / Martinshorn ohne Einsatz", haft:0, geld:250 },
+{ name:"§10 Abs.2 StVO – Sondersignale ignoriert", desc:"Nicht Platz gemacht", haft:0, geld:500 },
+
+{ name:"§11 StVO – Alkohol/Drogen", desc:"Fahren unter Einfluss", haft:15, geld:800 },
+{ name:"§12 Abs.5 StVO – Ohne Lizenz", desc:"Fahren ohne Fahrerlaubnis", haft:0, geld:1250 },
+
+{ name:"§13 Abs.1 StVO – Verkehrsbehinderung", desc:"Straße blockiert etc.", haft:0, geld:500 },
+{ name:"§13 Abs.2 StVO – Gefährlicher Eingriff", desc:"Gefährdung von Personen/Sachen", haft:20, geld:1250 },
+{ name:"§13 Abs.3 StVO – Falsche Fahrtrichtung", desc:"Entgegen der Richtung gefahren", haft:0, geld:250 },
+{ name:"§13 Abs.4 StVO – Abseits der Straße", desc:"Gehweg / Verkehrsinsel", haft:0, geld:150 },
+{ name:"§13 Abs.5 StVO – Fahrlässiger Unfall", desc:"Unfall verursacht", haft:0, geld:750 },
+{ name:"§13 Abs.6 StVO – Fahrerflucht", desc:"Unfallort verlassen", haft:0, geld:1000 },
+{ name:"§13 Abs.6.1 StVO – Fahrerflucht mit Schaden", desc:"Personenschaden", haft:15, geld:1500 },
+{ name:"§13 Abs.7 StVO – Handy am Steuer", desc:"Handynutzung während Fahrt", haft:0, geld:150 },
+
+{ name:"§14 StVO – Illegale Fahrzeugteile", desc:"Unerlaubte Umbauten", haft:0, geld:5000 },
+{ name:"§15 StVO – Kein Kennzeichen", desc:"Kennzeichen fehlt", haft:0, geld:5000 },
+{ name:"§16 StVO – Keine Zulassung", desc:"Unzugelassenes Fahrzeug", haft:0, geld:1500 },
+{ name:"§17 Abs.1 StVO – Mindestflughöhe", desc:"Unter 100m geflogen", haft:0, geld:500 },
+
+/* ================= STGB ================= */
+{ name:"§2 StGB – Diebstahl", desc:"Fremdes Eigentum entwendet", haft:20, geld:500 },
+{ name:"§3 Abs.1 StGB – Raub", desc:"Raub ohne Fahrzeug", haft:25, geld:1000 },
+{ name:"§3 Abs.2 StGB – Schwerer Raub", desc:"Gewaltandrohung", haft:40, geld:1500 },
+{ name:"§3 Abs.3 StGB – Bewaffneter Raub", desc:"Raub mit Waffen", haft:50, geld:2000 },
+{ name:"§3 Abs.4 StGB – Schwer bewaffneter Raub", desc:"Langwaffen", haft:60, geld:2500 },
+
+{ name:"§6 Abs.1 StGB – Nötigung", desc:"Zwang durch Drohung", haft:25, geld:950 },
+{ name:"§6 Abs.2 StGB – Geiselnahme", desc:"Person festgesetzt", haft:40, geld:1250 },
+{ name:"§6 Abs.3 StGB – Freiheitsberaubung", desc:"Bewegungsfreiheit entzogen", haft:15, geld:1000 },
+{ name:"§6 Abs.4 StGB – Bedrohung", desc:"Bedrohung einer Person", haft:0, geld:800 },
+
+{ name:"§7 Abs.1 StGB – Körperverletzung", desc:"Fahrlässige Verletzung", haft:20, geld:500 },
+{ name:"§7 Abs.2 StGB – Gefährliche KV", desc:"Mit Waffen", haft:30, geld:1000 },
+{ name:"§7 Abs.3 StGB – Schwere KV", desc:"Dauerhafte Schäden", haft:35, geld:1500 },
+
+{ name:"§9 Abs.1 StGB – Mord", desc:"Vorsätzliche Tötung", haft:70, geld:2000 },
+
+/* ================= BtMG ================= */
+{ name:"§1 BtMG – Drogenbesitz", desc:"Illegale Betäubungsmittel", haft:10, geld:50 },
+{ name:"§2 BtMG – Drogenhandel", desc:"Handel mit Betäubungsmitteln", haft:40, geld:850 },
+{ name:"§3 BtMG – Drogenkonsum öffentlich", desc:"Öffentlicher Konsum", haft:20, geld:100 },
+{ name:"§4 BtMG – Drogenherstellung", desc:"Illegale Herstellung", haft:20, geld:250 }
+
 ];
 
 let selected = [];
@@ -106,10 +176,10 @@ const selectedDiv = document.getElementById("selected");
 offences.forEach((o,i)=>{
     const div = document.createElement("div");
     div.className="item";
-    div.innerHTML = `<strong>${o.name}</strong><br><small>${o.desc}</small>`;
-    div.onclick = ()=>{
+    div.innerHTML=`<strong>${o.name}</strong><br><small>${o.desc}</small>`;
+    div.onclick=()=>{
         if(selected.includes(i)){
-            selected = selected.filter(x=>x!==i);
+            selected=selected.filter(x=>x!==i);
             div.classList.remove("selected");
         } else {
             selected.push(i);
@@ -123,18 +193,22 @@ offences.forEach((o,i)=>{
 function update(){
     selectedDiv.innerHTML="";
     let haft=0, geld=0;
-
     selected.forEach(i=>{
-        const o = offences[i];
-        haft += o.haft;
-        geld += o.geld;
-        selectedDiv.innerHTML += `<p><strong>${o.name}</strong><br>${o.desc}<br>Haft: ${o.haft} | Geld: ${o.geld}$</p><hr>`;
+        const o=offences[i];
+        haft+=o.haft;
+        geld+=o.geld;
+        selectedDiv.innerHTML+=
+        `<p><strong>${o.name}</strong><br>${o.desc}<br>Haft: ${o.haft} | Geld: ${o.geld}$</p><hr>`;
     });
+    document.getElementById("haft").innerText=haft;
+    document.getElementById("geld").innerText=geld;
+}
 
-    document.getElementById("haft").innerText = haft;
-    document.getElementById("geld").innerText = geld;
+function resetAll(){
+    selected=[];
+    document.querySelectorAll(".item").forEach(i=>i.classList.remove("selected"));
+    update();
 }
 </script>
-
 </body>
 </html>
