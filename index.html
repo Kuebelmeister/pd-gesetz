@@ -2,260 +2,137 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Polizei – Fallverwaltung</title>
-
+<title>PD Strafenkatalog</title>
 <style>
-:root{
-  --bg:#0c1117;
-  --panel:#131a23;
-  --card:#182230;
-  --accent:#2a7cff;
-  --text:#e7ecf2;
-  --muted:#9aa6b2;
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e5e7eb;
+    margin: 0;
+    padding: 30px;
 }
 
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Segoe UI, Arial, sans-serif;
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: #020617;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-.wrapper{
-  max-width:1100px;
-  margin:0 auto;
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-header{
-  padding:20px;
-  border-bottom:2px solid var(--accent);
-  background:linear-gradient(90deg,#101a2a,#142b4a);
-  font-size:22px;
-  font-weight:600;
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
-nav{
-  display:flex;
-  background:var(--panel);
+.list, .details {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 15px;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
-nav button{
-  flex:1;
-  padding:14px;
-  background:none;
-  border:none;
-  color:var(--muted);
-  cursor:pointer;
-  font-size:15px;
+.item {
+    padding: 10px;
+    border-bottom: 1px solid #1e293b;
+    cursor: pointer;
 }
 
-nav button.active{
-  color:white;
-  border-bottom:3px solid var(--accent);
+.item:hover {
+    background: #1e293b;
 }
 
-section{
-  display:none;
-  padding:20px;
+.selected {
+    background: #2563eb;
 }
 
-section.active{display:block;}
-
-input,select,textarea,button{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  background:var(--card);
-  color:var(--text);
-  border:1px solid #253248;
-  border-radius:4px;
-}
-
-textarea{resize:vertical}
-
-button{
-  background:var(--accent);
-  border:none;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.card{
-  background:var(--card);
-  padding:14px;
-  margin:10px 0;
-  border-left:4px solid var(--accent);
-}
-
-.small{
-  font-size:12px;
-  color:var(--muted);
-}
-
-.actions{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-
-.actions button{
-  flex:1;
-}
-
-.actions .delete{
-  background:#8b1e1e;
-}
-
-img{
-  max-width:100%;
-  margin-top:10px;
-  border-radius:4px;
+.summary {
+    margin-top: 15px;
+    padding: 10px;
+    background: #020617;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
 }
 </style>
 </head>
-
 <body>
 
-<div class="wrapper">
+<div class="container">
+<h1>🚓 Polizeilicher Strafenkatalog</h1>
 
-<header>🚓 Polizei – Fall- & Strafverwaltung</header>
+<div class="layout">
+<div class="list" id="list"></div>
 
-<nav>
-  <button class="active" onclick="tab(0)">Strafkatalog</button>
-  <button onclick="tab(1)">Neue Akte</button>
-  <button onclick="tab(2)">Aktenarchiv</button>
-</nav>
+<div class="details">
+<h3>Ausgewählte Straftaten</h3>
+<div id="selected"></div>
 
-<!-- STRAFKATALOG -->
-<section class="active">
-  <input id="search" placeholder="Paragraph oder Straftat suchen…" oninput="renderStrafen()">
-  <div id="strafen"></div>
-</section>
-
-<!-- AKTE -->
-<section>
-  <input id="vorname" placeholder="Vorname">
-  <input id="nachname" placeholder="Nachname">
-  <select id="tat"></select>
-  <input id="geld" placeholder="Geldstrafe ($)">
-  <input id="haft" placeholder="Haft (Monate)">
-  <textarea id="notiz" placeholder="Sachverhalt / Notizen"></textarea>
-  <input type="file" id="bild">
-  <button onclick="saveAkte()">Akte speichern</button>
-</section>
-
-<!-- ARCHIV -->
-<section>
-  <div id="akten"></div>
-</section>
-
+<div class="summary">
+<strong>Gesamtstrafe:</strong><br>
+Haft: <span id="haft">0</span> HE<br>
+Geld: <span id="geld">0</span> $
+</div>
+</div>
+</div>
 </div>
 
 <script>
-const STRAFEN = [
-"§1 Abs.3 StVO – Mitführpflicht missachtet – 350$",
-"§2 Abs.1 StVO – Rechtsfahrgebot missachtet – 200$",
-"§3 Abs.1 StVO – Einbahnstraße falsch befahren – 200$",
-"§3 Abs.2 StVO – Stoppschild missachtet – 200$",
-"§3 Abs.2 StVO – Stoppschild mit Gefährdung – 500$",
-"§5 Abs.3 StVO – 1–20 km/h zu schnell – 250$",
-"§5 Abs.3 StVO – 21–50 km/h zu schnell – 500$",
-"§5 Abs.3 StVO – 51–100 km/h – 750$ + Fahrzeug",
-"§5 Abs.3 StVO – ab 101 km/h – 1000$ + Fahrzeug",
-"§7 StVO – Rechts überholen – 200$",
-"§9 StVO – Falschparken – 1000$ + Abschleppen",
-"§10 StVO – Missbrauch von Sonderrechten – 250$",
-"§11 StVO – Alkohol/Drogen – 800$ + Fahrzeug",
-"§13 Abs.6 StVO – Fahrerflucht – 1000$",
-"§14 StVO – Unerlaubte Fahrzeugveränderung – 5000$",
-"§15 StVO – Kein Kennzeichen – 5000$",
-
-"§2 StGB – Diebstahl – 500$ / 20 Monate",
-"§3 StGB – Raub – 1000$ / 25 Monate",
-"§3 StGB – Bewaffneter Raub – 2000$ / 50 Monate",
-"§6 StGB – Nötigung – 950$ / 25 Monate",
-"§7 StGB – Körperverletzung – 500$ / 20 Monate",
-"§8 StGB – Totschlag – 1750$ / 40 Monate",
-"§9 StGB – Mord – 2000$ / 70 Monate",
-"§12 StGB – Widerstand gegen Beamte – 1000$ / 30 Monate",
-"§13 StGB – Beleidigung – 500$",
-"§16 StGB – Sachbeschädigung – 500$",
-"§28 StGB – Illegales Straßenrennen – 1250$ / 20 Monate",
-"§30 StGB – Brandstiftung – 700$ / 30 Monate",
-"§35 StGB – Sexuelle Belästigung – 1000$ / 40 Monate",
-
-"§1 BtMG – Besitz von Betäubungsmitteln – 50$ / 10 Monate",
-"§2 BtMG – Handel mit Betäubungsmitteln – 850$ / 40 Monate",
-"§3 BtMG – Konsum in Öffentlichkeit – 100$ / 20 Monate"
+const offences = [
+    { name:"§5 Abs.3 StVO – 51–100 km/h zu schnell", desc:"Erhebliche Geschwindigkeitsüberschreitung", haft:10, geld:750 },
+    { name:"§11 StVO – Alkohol/Drogen am Steuer", desc:"Führen eines Fahrzeugs unter Einfluss", haft:15, geld:800 },
+    { name:"§13 Abs.6 StVO – Fahrerflucht", desc:"Unerlaubtes Entfernen vom Unfallort", haft:0, geld:1000 },
+    { name:"§3 Abs.4 StGB – Schwerer bewaffneter Raub", desc:"Raub mit Langwaffen", haft:60, geld:2500 },
+    { name:"§7 Abs.3 StGB – Schwere Körperverletzung", desc:"Körperverletzung mit Folgeschäden", haft:35, geld:1500 },
+    { name:"§9 Abs.1 StGB – Mord", desc:"Vorsätzliche Tötung", haft:70, geld:2000 },
+    { name:"§30 StGB – Brandstiftung", desc:"Vorsätzliche Brandlegung", haft:30, geld:700 },
+    { name:"§2 BtMG – Handel mit Betäubungsmitteln", desc:"Illegaler Drogenhandel", haft:40, geld:850 },
+    { name:"§1 BtMG – Besitz von Betäubungsmitteln", desc:"Illegaler Drogenbesitz", haft:10, geld:50 }
 ];
 
-const tatSel=document.getElementById("tat");
-STRAFEN.forEach(s=>{
-  let o=document.createElement("option");
-  o.textContent=s;
-  tatSel.appendChild(o);
+let selected = [];
+
+const list = document.getElementById("list");
+const selectedDiv = document.getElementById("selected");
+
+offences.forEach((o,i)=>{
+    const div = document.createElement("div");
+    div.className="item";
+    div.innerHTML = `<strong>${o.name}</strong><br><small>${o.desc}</small>`;
+    div.onclick = ()=>{
+        if(selected.includes(i)){
+            selected = selected.filter(x=>x!==i);
+            div.classList.remove("selected");
+        } else {
+            selected.push(i);
+            div.classList.add("selected");
+        }
+        update();
+    };
+    list.appendChild(div);
 });
 
-function tab(i){
-  document.querySelectorAll("section").forEach((s,idx)=>s.classList.toggle("active",idx===i));
-  document.querySelectorAll("nav button").forEach((b,idx)=>b.classList.toggle("active",idx===i));
-  if(i===2) loadAkten();
-}
+function update(){
+    selectedDiv.innerHTML="";
+    let haft=0, geld=0;
 
-function renderStrafen(){
-  const q=search.value.toLowerCase();
-  strafen.innerHTML="";
-  STRAFEN.filter(s=>s.toLowerCase().includes(q)).forEach(s=>{
-    strafen.innerHTML+=`<div class="card">${s}</div>`;
-  });
-}
-renderStrafen();
-
-function saveAkte(){
-  const reader=new FileReader();
-  const file=bild.files[0];
-  reader.onload=()=>{
-    const data=JSON.parse(localStorage.getItem("akten")||"[]");
-    data.push({
-      name:vorname.value+" "+nachname.value,
-      tat:tat.value,
-      geld:geld.value,
-      haft:haft.value,
-      notiz:notiz.value,
-      bild:reader.result||"",
-      zeit:new Date().toLocaleString()
+    selected.forEach(i=>{
+        const o = offences[i];
+        haft += o.haft;
+        geld += o.geld;
+        selectedDiv.innerHTML += `<p><strong>${o.name}</strong><br>${o.desc}<br>Haft: ${o.haft} | Geld: ${o.geld}$</p><hr>`;
     });
-    localStorage.setItem("akten",JSON.stringify(data));
-    alert("Akte gespeichert");
-  };
-  if(file) reader.readAsDataURL(file);
-  else reader.onload();
-}
 
-function loadAkten(){
-  akten.innerHTML="";
-  const data=JSON.parse(localStorage.getItem("akten")||"[]");
-  data.forEach((a,i)=>{
-    akten.innerHTML+=`
-    <div class="card">
-      <b>${a.name}</b><br>
-      ${a.tat}<br>
-      💸 ${a.geld}$ | ⏱ ${a.haft} Monate<br>
-      <span class="small">${a.zeit}</span>
-      ${a.bild?`<img src="${a.bild}">`:""}
-      <div class="actions">
-        <button onclick="alert(a.notiz)">Details</button>
-        <button class="delete" onclick="delAkte(${i})">Löschen</button>
-      </div>
-    </div>`;
-  });
-}
-
-function delAkte(i){
-  const d=JSON.parse(localStorage.getItem("akten"));
-  d.splice(i,1);
-  localStorage.setItem("akten",JSON.stringify(d));
-  loadAkten();
+    document.getElementById("haft").innerText = haft;
+    document.getElementById("geld").innerText = geld;
 }
 </script>
 
