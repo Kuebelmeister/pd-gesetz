@@ -1,1 +1,192 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>PD Strafsystem</title>
 
+<style>
+body {
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#0e1412;
+  color:#eaeaea;
+}
+
+nav {
+  display:flex;
+  background:#12201a;
+  border-bottom:2px solid #1fa774;
+}
+
+nav button {
+  flex:1;
+  padding:15px;
+  background:none;
+  color:#ccc;
+  border:none;
+  cursor:pointer;
+  font-size:16px;
+}
+
+nav button.active {
+  background:#1fa774;
+  color:#000;
+  font-weight:bold;
+}
+
+section {
+  display:none;
+  padding:20px;
+}
+
+section.active {
+  display:block;
+}
+
+input, select, textarea, button {
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  background:#1a2722;
+  color:#fff;
+  border:1px solid #1fa774;
+}
+
+textarea { resize:vertical }
+
+.card {
+  background:#14211c;
+  padding:12px;
+  margin:6px 0;
+  border-left:4px solid #1fa774;
+}
+
+.small {
+  color:#aaa;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <button class="active" onclick="tab(0)">Strafkatalog</button>
+  <button onclick="tab(1)">Neue Akte</button>
+  <button onclick="tab(2)">Aktenarchiv</button>
+</nav>
+
+<!-- STRAFKATALOG -->
+<section class="active">
+  <input id="search" placeholder="§ oder Straftat suchen…" oninput="renderStrafen()">
+  <div id="strafen"></div>
+</section>
+
+<!-- AKTE -->
+<section>
+  <input id="vorname" placeholder="Vorname">
+  <input id="nachname" placeholder="Nachname">
+
+  <select id="tat"></select>
+
+  <input id="geld" placeholder="Geldstrafe ($)">
+  <input id="haft" placeholder="Haft (Monate)">
+  <textarea id="notiz" placeholder="Sachverhalt / Notizen"></textarea>
+
+  <button onclick="saveAkte()">Akte speichern</button>
+</section>
+
+<!-- ARCHIV -->
+<section>
+  <div id="akten"></div>
+</section>
+
+<script>
+const STRAFEN = [
+  "§1 Abs.3 StVO – Mitführpflicht missachtet – 350$",
+  "§2 Abs.1 StVO – Rechtsfahrgebot missachtet – 200$",
+  "§3 Abs.1 StVO – Einbahnstraße falsch – 200$",
+  "§3 Abs.2 StVO – Stoppschild missachtet – 200$",
+  "§3 Abs.2 StVO – Stoppschild mit Gefährdung – 500$",
+  "§5 Abs.3 StVO – 1–20 km/h zu schnell – 250$",
+  "§5 Abs.3 StVO – 21–50 km/h zu schnell – 500$",
+  "§5 Abs.3 StVO – 51–100 km/h – 750$ + Fahrzeug",
+  "§5 Abs.3 StVO – ab 101 km/h – 1000$ + Fahrzeug",
+  "§7 StVO – Rechts überholen – 200$",
+  "§9 StVO – Falschparken – 1000$ + Abschleppen",
+  "§10 StVO – Missbrauch von Sonderrechten – 250$",
+  "§11 StVO – Alkohol/Drogen – 800$ + Fahrzeug",
+  "§14 StVO – Unerlaubte Fahrzeugveränderung – 5000$",
+  "§15 StVO – Kein Kennzeichen – 5000$",
+  "§2 StGB – Diebstahl – 500$",
+  "§3 StGB – Raub – 1000$",
+  "§3 StGB – Bewaffneter Raub – 2000$",
+  "§6 StGB – Nötigung – 950$",
+  "§7 StGB – Körperverletzung – 500$",
+  "§8 StGB – Totschlag – 1750$",
+  "§9 StGB – Mord – 2000$",
+  "§12 StGB – Widerstand gegen Beamte – 1000$",
+  "§13 StGB – Beleidigung – 500$",
+  "§16 StGB – Sachbeschädigung – 500$",
+  "§28 StGB – Illegales Straßenrennen – 1250$",
+  "§30 StGB – Brandstiftung – 700$",
+  "§35 StGB – Sexuelle Belästigung – 1000$",
+  "§1 BtMG – Besitz von BTM – 50$",
+  "§2 BtMG – Handel mit BTM – 850$",
+  "§3 BtMG – Konsum in Öffentlichkeit – 100$"
+];
+
+function tab(i){
+  document.querySelectorAll("section").forEach((s,idx)=>s.classList.toggle("active",idx===i));
+  document.querySelectorAll("nav button").forEach((b,idx)=>b.classList.toggle("active",idx===i));
+  if(i===2) loadAkten();
+}
+
+function renderStrafen(){
+  const q = search.value.toLowerCase();
+  strafen.innerHTML="";
+  STRAFEN.filter(s=>s.toLowerCase().includes(q)).forEach(s=>{
+    strafen.innerHTML += `<div class="card">${s}</div>`;
+  });
+}
+renderStrafen();
+
+const tatSelect = document.getElementById("tat");
+STRAFEN.forEach(s=>{
+  let o=document.createElement("option");
+  o.textContent=s;
+  tatSelect.appendChild(o);
+});
+
+function saveAkte(){
+  const data = JSON.parse(localStorage.getItem("akten")||"[]");
+  data.push({
+    name: vorname.value+" "+nachname.value,
+    tat: tat.value,
+    geld: geld.value,
+    haft: haft.value,
+    notiz: notiz.value,
+    zeit: new Date().toLocaleString()
+  });
+  localStorage.setItem("akten",JSON.stringify(data));
+  alert("Akte gespeichert");
+}
+
+function loadAkten(){
+  akten.innerHTML="";
+  const data = JSON.parse(localStorage.getItem("akten")||"[]");
+  data.forEach(a=>{
+    akten.innerHTML+=`
+      <div class="card">
+        <b>${a.name}</b><br>
+        ${a.tat}<br>
+        💸 ${a.geld}$ | ⏱ ${a.haft} Monate<br>
+        <span class="small">${a.zeit}</span><br>
+        ${a.notiz}
+      </div>`;
+  });
+}
+</script>
+
+</body>
+</html>
