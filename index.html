@@ -2,31 +2,36 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>PD Fall- & Strafsystem</title>
+<title>Polizei – Fallverwaltung</title>
 
 <style>
 :root{
-  --bg:#0b0f14;
-  --panel:#121923;
-  --card:#161f2e;
-  --accent:#1e90ff;
-  --text:#e6ecf3;
-  --muted:#9aa4b2;
+  --bg:#0c1117;
+  --panel:#131a23;
+  --card:#182230;
+  --accent:#2a7cff;
+  --text:#e7ecf2;
+  --muted:#9aa6b2;
 }
 
 body{
   margin:0;
-  font-family:Segoe UI, Arial, sans-serif;
   background:var(--bg);
   color:var(--text);
+  font-family:Segoe UI, Arial, sans-serif;
+}
+
+.wrapper{
+  max-width:1100px;
+  margin:0 auto;
 }
 
 header{
-  padding:16px;
-  background:linear-gradient(90deg,#0f1b2d,#132b4a);
+  padding:20px;
   border-bottom:2px solid var(--accent);
-  font-size:20px;
-  font-weight:bold;
+  background:linear-gradient(90deg,#101a2a,#142b4a);
+  font-size:22px;
+  font-weight:600;
 }
 
 nav{
@@ -62,14 +67,16 @@ input,select,textarea,button{
   margin:6px 0;
   background:var(--card);
   color:var(--text);
-  border:1px solid #24334a;
+  border:1px solid #253248;
   border-radius:4px;
 }
+
+textarea{resize:vertical}
 
 button{
   background:var(--accent);
   border:none;
-  font-weight:bold;
+  font-weight:600;
   cursor:pointer;
 }
 
@@ -80,15 +87,25 @@ button{
   border-left:4px solid var(--accent);
 }
 
-.small{font-size:12px;color:var(--muted);}
+.small{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
 
 .actions button{
-  margin-top:5px;
-  background:#b22222;
+  flex:1;
 }
-.actions button.view{
-  background:#2e8b57;
+
+.actions .delete{
+  background:#8b1e1e;
 }
+
 img{
   max-width:100%;
   margin-top:10px;
@@ -99,7 +116,9 @@ img{
 
 <body>
 
-<header>🚓 Polizei – Fall- & Strafsystem</header>
+<div class="wrapper">
+
+<header>🚓 Polizei – Fall- & Strafverwaltung</header>
 
 <nav>
   <button class="active" onclick="tab(0)">Strafkatalog</button>
@@ -107,9 +126,9 @@ img{
   <button onclick="tab(2)">Aktenarchiv</button>
 </nav>
 
-<!-- STRAFEN -->
+<!-- STRAFKATALOG -->
 <section class="active">
-  <input id="search" placeholder="Straftat oder § suchen…" oninput="renderStrafen()">
+  <input id="search" placeholder="Paragraph oder Straftat suchen…" oninput="renderStrafen()">
   <div id="strafen"></div>
 </section>
 
@@ -130,16 +149,44 @@ img{
   <div id="akten"></div>
 </section>
 
+</div>
+
 <script>
-const STRAFEN=[
-"§2 StGB – Diebstahl – 500$",
-"§3 StGB – Raub – 1000$",
-"§7 StGB – Körperverletzung – 500$",
-"§9 StGB – Mord – 2000$",
+const STRAFEN = [
+"§1 Abs.3 StVO – Mitführpflicht missachtet – 350$",
+"§2 Abs.1 StVO – Rechtsfahrgebot missachtet – 200$",
+"§3 Abs.1 StVO – Einbahnstraße falsch befahren – 200$",
+"§3 Abs.2 StVO – Stoppschild missachtet – 200$",
+"§3 Abs.2 StVO – Stoppschild mit Gefährdung – 500$",
+"§5 Abs.3 StVO – 1–20 km/h zu schnell – 250$",
+"§5 Abs.3 StVO – 21–50 km/h zu schnell – 500$",
+"§5 Abs.3 StVO – 51–100 km/h – 750$ + Fahrzeug",
+"§5 Abs.3 StVO – ab 101 km/h – 1000$ + Fahrzeug",
+"§7 StVO – Rechts überholen – 200$",
+"§9 StVO – Falschparken – 1000$ + Abschleppen",
+"§10 StVO – Missbrauch von Sonderrechten – 250$",
+"§11 StVO – Alkohol/Drogen – 800$ + Fahrzeug",
 "§13 Abs.6 StVO – Fahrerflucht – 1000$",
-"§28 StGB – Illegales Rennen – 1250$",
-"§1 BtMG – Besitz BTM – 50$",
-"§2 BtMG – Handel BTM – 850$"
+"§14 StVO – Unerlaubte Fahrzeugveränderung – 5000$",
+"§15 StVO – Kein Kennzeichen – 5000$",
+
+"§2 StGB – Diebstahl – 500$ / 20 Monate",
+"§3 StGB – Raub – 1000$ / 25 Monate",
+"§3 StGB – Bewaffneter Raub – 2000$ / 50 Monate",
+"§6 StGB – Nötigung – 950$ / 25 Monate",
+"§7 StGB – Körperverletzung – 500$ / 20 Monate",
+"§8 StGB – Totschlag – 1750$ / 40 Monate",
+"§9 StGB – Mord – 2000$ / 70 Monate",
+"§12 StGB – Widerstand gegen Beamte – 1000$ / 30 Monate",
+"§13 StGB – Beleidigung – 500$",
+"§16 StGB – Sachbeschädigung – 500$",
+"§28 StGB – Illegales Straßenrennen – 1250$ / 20 Monate",
+"§30 StGB – Brandstiftung – 700$ / 30 Monate",
+"§35 StGB – Sexuelle Belästigung – 1000$ / 40 Monate",
+
+"§1 BtMG – Besitz von Betäubungsmitteln – 50$ / 10 Monate",
+"§2 BtMG – Handel mit Betäubungsmitteln – 850$ / 40 Monate",
+"§3 BtMG – Konsum in Öffentlichkeit – 100$ / 20 Monate"
 ];
 
 const tatSel=document.getElementById("tat");
@@ -195,9 +242,10 @@ function loadAkten(){
       ${a.tat}<br>
       💸 ${a.geld}$ | ⏱ ${a.haft} Monate<br>
       <span class="small">${a.zeit}</span>
+      ${a.bild?`<img src="${a.bild}">`:""}
       <div class="actions">
-        <button class="view" onclick="viewAkte(${i})">Ansehen</button>
-        <button onclick="delAkte(${i})">Löschen</button>
+        <button onclick="alert(a.notiz)">Details</button>
+        <button class="delete" onclick="delAkte(${i})">Löschen</button>
       </div>
     </div>`;
   });
@@ -208,16 +256,6 @@ function delAkte(i){
   d.splice(i,1);
   localStorage.setItem("akten",JSON.stringify(d));
   loadAkten();
-}
-
-function viewAkte(i){
-  const a=JSON.parse(localStorage.getItem("akten"))[i];
-  alert(
-    a.name+"\n\n"+a.tat+
-    "\nGeld: "+a.geld+
-    "\nHaft: "+a.haft+
-    "\n\n"+a.notiz
-  );
 }
 </script>
 
