@@ -2,121 +2,121 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>PD – Gesetzbuch & Strafkatalog</title>
+<title>PD Strafsystem</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0b1220;
-  color: #e5e7eb;
-  padding: 20px;
+body { font-family: Arial; background:#111; color:#eee; margin:0 }
+nav { display:flex; background:#222 }
+nav button {
+  flex:1; padding:15px; background:#222; color:#eee;
+  border:none; cursor:pointer; font-size:16px;
 }
-h1 { margin-bottom: 5px; }
-input {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: none;
-  margin: 15px 0;
+nav button.active { background:#0a5; }
+section { display:none; padding:20px }
+section.active { display:block }
+input, select, textarea, button {
+  width:100%; padding:10px; margin:5px 0;
 }
-.entry {
-  background: #1e293b;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 12px;
+.card {
+  background:#1b1b1b; padding:10px; margin:5px 0;
+  border-left:4px solid #0a5;
 }
-.paragraf {
-  font-weight: bold;
-  color: #38bdf8;
-}
-.small {
-  font-size: 13px;
-  opacity: 0.9;
-}
-.tag {
-  display: inline-block;
-  background: #334155;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  margin-right: 6px;
-  margin-top: 4px;
-}
+.small { font-size:12px; color:#aaa }
 </style>
 </head>
 <body>
 
-<h1>🚓 PD – Gesetzbuch & Strafkatalog</h1>
-<p>Suche nach Paragraf, Vergehen oder Stichwort</p>
+<nav>
+  <button onclick="showTab(0)" class="active">Strafkatalog</button>
+  <button onclick="showTab(1)">Neue Akte</button>
+  <button onclick="showTab(2)">Gespeicherte Akten</button>
+</nav>
 
-<input id="search" placeholder="z. B. Diebstahl, §13 StVO, Handy, Rennen …">
+<!-- STRAFKATALOG -->
+<section class="active">
+  <input id="search" placeholder="Straftat oder § suchen..." oninput="filterStrafen()">
+  <div id="strafen"></div>
+</section>
 
-<div id="results"></div>
+<!-- AKTE -->
+<section>
+  <input id="vorname" placeholder="Vorname">
+  <input id="nachname" placeholder="Nachname">
+
+  <select id="tat">
+    <option>Diebstahl (§2 StGB)</option>
+    <option>Körperverletzung (§7 StGB)</option>
+    <option>Raub (§3 StGB)</option>
+    <option>Fahrerflucht (§13 Abs.6 StVO)</option>
+  </select>
+
+  <input id="geld" placeholder="Geldstrafe ($)">
+  <input id="haft" placeholder="Haft (Monate)">
+  <textarea id="notiz" placeholder="Notizen / Hergang"></textarea>
+
+  <button onclick="saveAkte()">Akte speichern</button>
+</section>
+
+<!-- AKTEN -->
+<section>
+  <div id="akten"></div>
+</section>
 
 <script>
-const laws = [
-
-/* ===================== STVO ===================== */
-{ p:"§1 Abs. 3 StVO", t:"Mitführpflicht missachtet", d:"Verbandtasche, Warndreieck oder Warnweste fehlt.", h:"-", g:"350 $", i:"OWi" },
-{ p:"§3 Abs. 2 StVO", t:"Stoppschild missachtet", d:"Nicht an Stoppschild gehalten.", h:"-", g:"200 $", i:"OWi" },
-{ p:"§5 Abs. 3 StVO", t:"Geschwindigkeitsüberschreitung 51–100 km/h", d:"Erhebliche Geschwindigkeitsüberschreitung.", h:"10", g:"750 $", i:"Fahrzeug + 2 Punkte" },
-{ p:"§9 StVO", t:"Falschparken", d:"Parken außerhalb zulässiger Flächen.", h:"-", g:"1000 $", i:"Abschleppen" },
-{ p:"§11 StVO", t:"Alkohol- / Drogeneinfluss", d:"Fahren unter Alkohol oder Drogen.", h:"15", g:"800 $", i:"Fahrzeug + 2 Punkte" },
-{ p:"§13 Abs. 6 StVO", t:"Fahrerflucht", d:"Unerlaubtes Entfernen vom Unfallort.", h:"-", g:"1000 $", i:"2 Punkte" },
-{ p:"§13 Abs. 7 StVO", t:"Handynutzung", d:"Handynutzung während der Fahrt.", h:"-", g:"150 $", i:"OWi" },
-
-/* ===================== STGB ===================== */
-{ p:"§2 StGB", t:"Diebstahl", d:"Wegnahme fremden Eigentums.", h:"20", g:"500 $", i:"Diebesgut zurückführen" },
-{ p:"§3 Abs. 4 StGB", t:"Schwerer bewaffneter Raub", d:"Raub mit Langwaffen.", h:"60", g:"2500 $", i:"Tatwaffen + Waffenschein" },
-{ p:"§7 Abs. 3 StGB", t:"Schwere Körperverletzung", d:"Körperverletzung mit Folgeschäden.", h:"35", g:"1500 $", i:"Tatwaffen" },
-{ p:"§9 Abs. 1 StGB", t:"Mord", d:"Vorsätzliche Tötung.", h:"70", g:"2000 $", i:"Tatwaffen + Waffenschein" },
-{ p:"§12 Abs. 2 StGB", t:"Widerstand gegen Beamte", d:"Gewalt oder Drohung gegen Beamte.", h:"30", g:"1000 $", i:"-" },
-{ p:"§15 StGB", t:"Vermummungsverbot", d:"Vermummung in der Öffentlichkeit.", h:"-", g:"350 $", i:"Personenkontrolle" },
-{ p:"§28 StGB", t:"Verbotene Kraftfahrzeugrennen", d:"Illegale Straßenrennen.", h:"20", g:"1250 $", i:"-" },
-{ p:"§30 StGB", t:"Brandstiftung", d:"Vorsätzliche Brandlegung.", h:"30", g:"700 $", i:"-" },
-
-/* ===================== BTMG ===================== */
-{ p:"§1 BtMG", t:"Besitz von Betäubungsmitteln", d:"Besitz illegaler Betäubungsmittel (außer Cannabis).", h:"10", g:"50 $ / Einheit", i:"BtM beschlagnahmen" },
-{ p:"§2 BtMG", t:"Handel mit Betäubungsmitteln", d:"Handel mit illegalen Betäubungsmitteln.", h:"40", g:"850 $", i:"BtM beschlagnahmen" },
-{ p:"§3 BtMG", t:"Konsum in Öffentlichkeit", d:"Konsum illegaler BtM in der Öffentlichkeit.", h:"20", g:"100 $", i:"-" },
-{ p:"§4 BtMG", t:"Herstellung von BtM", d:"Herstellung illegaler Betäubungsmittel.", h:"20", g:"250 $", i:"BtM + Baupläne" }
-
+const strafListe = [
+  "§2 StGB – Diebstahl – 500$",
+  "§3 StGB – Raub – 1000$",
+  "§7 StGB – Körperverletzung – 500$",
+  "§13 Abs.6 StVO – Fahrerflucht – 1000$"
 ];
 
-const input = document.getElementById("search");
-const results = document.getElementById("results");
-
-function render(list) {
-  results.innerHTML = "";
-  if (list.length === 0) {
-    results.innerHTML = "<p>Keine Treffer gefunden 🤷‍♂️</p>";
-    return;
-  }
-  list.forEach(l => {
-    results.innerHTML += `
-      <div class="entry">
-        <div class="paragraf">${l.p} – ${l.t}</div>
-        <p>${l.d}</p>
-        <div class="small">
-          <span class="tag">Haft: ${l.h}</span>
-          <span class="tag">Geld: ${l.g}</span>
-          <span class="tag">${l.i}</span>
-        </div>
-      </div>
-    `;
+function showTab(i){
+  document.querySelectorAll("section").forEach((s,idx)=>{
+    s.classList.toggle("active", idx===i)
   });
+  document.querySelectorAll("nav button").forEach((b,idx)=>{
+    b.classList.toggle("active", idx===i)
+  });
+  if(i===2) loadAkten();
 }
 
-input.addEventListener("input", () => {
-  const q = input.value.toLowerCase();
-  render(laws.filter(l =>
-    l.t.toLowerCase().includes(q) ||
-    l.d.toLowerCase().includes(q) ||
-    l.p.toLowerCase().includes(q)
-  ));
-});
+function filterStrafen(){
+  const v = search.value.toLowerCase();
+  strafen.innerHTML = "";
+  strafListe.filter(s=>s.toLowerCase().includes(v))
+    .forEach(s=>{
+      strafen.innerHTML += `<div class="card">${s}</div>`;
+    });
+}
+filterStrafen();
 
-render(laws);
+function saveAkte(){
+  const akten = JSON.parse(localStorage.getItem("akten")||"[]");
+  akten.push({
+    name: vorname.value+" "+nachname.value,
+    tat: tat.value,
+    geld: geld.value,
+    haft: haft.value,
+    notiz: notiz.value,
+    datum: new Date().toLocaleString()
+  });
+  localStorage.setItem("akten", JSON.stringify(akten));
+  alert("Akte gespeichert");
+}
+
+function loadAkten(){
+  akten.innerHTML="";
+  const data = JSON.parse(localStorage.getItem("akten")||"[]");
+  data.forEach(a=>{
+    akten.innerHTML += `
+      <div class="card">
+        <b>${a.name}</b><br>
+        ${a.tat}<br>
+        💸 ${a.geld}$ | ⏱ ${a.haft} Monate<br>
+        <span class="small">${a.datum}</span><br>
+        ${a.notiz}
+      </div>`;
+  });
+}
 </script>
 
 </body>
