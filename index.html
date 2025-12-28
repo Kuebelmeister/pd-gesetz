@@ -2,121 +2,153 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>PD – Gesetzbuch & Strafkatalog</title>
+<title>PD Gesetzesübersicht</title>
 <style>
 body {
   font-family: Arial, sans-serif;
-  background: #0b1220;
+  background: #0f172a;
   color: #e5e7eb;
-  padding: 20px;
+  margin: 0;
 }
-h1 { margin-bottom: 5px; }
+.container {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #020617;
+  border-radius: 10px;
+}
+h1 {
+  text-align: center;
+}
 input {
   width: 100%;
-  padding: 12px;
-  font-size: 16px;
+  padding: 10px;
+  margin-bottom: 15px;
   border-radius: 6px;
   border: none;
-  margin: 15px 0;
 }
-.entry {
-  background: #1e293b;
-  border-radius: 8px;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+th, td {
+  padding: 8px;
+  border-bottom: 1px solid #1e293b;
+}
+th {
+  background: #020617;
+}
+tr:hover {
+  background: #020617;
+}
+.summary {
+  margin-top: 20px;
   padding: 15px;
-  margin-bottom: 12px;
+  background: #020617;
+  border-radius: 8px;
 }
-.paragraf {
-  font-weight: bold;
-  color: #38bdf8;
-}
-.small {
-  font-size: 13px;
-  opacity: 0.9;
-}
-.tag {
-  display: inline-block;
-  background: #334155;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  margin-right: 6px;
-  margin-top: 4px;
+.badge {
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #1e40af;
 }
 </style>
 </head>
 <body>
 
-<h1>🚓 PD – Gesetzbuch & Strafkatalog</h1>
-<p>Suche nach Paragraf, Vergehen oder Stichwort</p>
+<div class="container">
+<h1>PD Gesetzesrechner</h1>
 
-<input id="search" placeholder="z. B. Diebstahl, §13 StVO, Handy, Rennen …">
+<input type="text" id="search" placeholder="Straftat, Paragraf oder Beschreibung suchen...">
 
-<div id="results"></div>
+<table id="lawTable">
+<thead>
+<tr>
+<th></th>
+<th>Paragraf</th>
+<th>Name</th>
+<th>Beschreibung</th>
+<th>Haft</th>
+<th>Geld</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div class="summary">
+<b>Gesamtstrafe:</b><br>
+Haft: <span id="totalHaft">0</span> HE<br>
+Geld: <span id="totalGeld">0</span> $
+</div>
+</div>
 
 <script>
 const laws = [
+  {p:"§1 Abs. 3 StVO", n:"Mitführpflicht missachtet", d:"KFZ-Verbandtasche, Warndreieck oder Warnweste fehlt.", h:0, g:350},
+  {p:"§2 Abs. 1 StVO", n:"Rechtsfahrgebot missachtet", d:"Auf Highways nicht rechts gefahren.", h:0, g:200},
+  {p:"§3 Abs. 1 StVO", n:"Falsche Einbahnstraße", d:"Einbahnstraße in falscher Richtung befahren.", h:0, g:200},
+  {p:"§3 Abs. 2 StVO", n:"Stoppschild missachtet", d:"Stoppschild nicht beachtet.", h:0, g:200},
+  {p:"§3 Abs. 2 StVO", n:"Stoppschild mit Gefährdung", d:"Stoppschild missachtet mit Gefährdung.", h:0, g:500},
 
-/* ===================== STVO ===================== */
-{ p:"§1 Abs. 3 StVO", t:"Mitführpflicht missachtet", d:"Verbandtasche, Warndreieck oder Warnweste fehlt.", h:"-", g:"350 $", i:"OWi" },
-{ p:"§3 Abs. 2 StVO", t:"Stoppschild missachtet", d:"Nicht an Stoppschild gehalten.", h:"-", g:"200 $", i:"OWi" },
-{ p:"§5 Abs. 3 StVO", t:"Geschwindigkeitsüberschreitung 51–100 km/h", d:"Erhebliche Geschwindigkeitsüberschreitung.", h:"10", g:"750 $", i:"Fahrzeug + 2 Punkte" },
-{ p:"§9 StVO", t:"Falschparken", d:"Parken außerhalb zulässiger Flächen.", h:"-", g:"1000 $", i:"Abschleppen" },
-{ p:"§11 StVO", t:"Alkohol- / Drogeneinfluss", d:"Fahren unter Alkohol oder Drogen.", h:"15", g:"800 $", i:"Fahrzeug + 2 Punkte" },
-{ p:"§13 Abs. 6 StVO", t:"Fahrerflucht", d:"Unerlaubtes Entfernen vom Unfallort.", h:"-", g:"1000 $", i:"2 Punkte" },
-{ p:"§13 Abs. 7 StVO", t:"Handynutzung", d:"Handynutzung während der Fahrt.", h:"-", g:"150 $", i:"OWi" },
+  {p:"§5 Abs. 3 StVO", n:"Geschwindigkeit 1–20 km/h", d:"1 bis 20 km/h zu schnell.", h:0, g:250},
+  {p:"§5 Abs. 3 StVO", n:"Geschwindigkeit 21–50 km/h", d:"21 bis 50 km/h zu schnell.", h:0, g:500},
+  {p:"§5 Abs. 3 StVO", n:"Geschwindigkeit 51–100 km/h", d:"51 bis 100 km/h zu schnell.", h:10, g:750},
+  {p:"§5 Abs. 3 StVO", n:"Geschwindigkeit ab 101 km/h", d:"Über 100 km/h zu schnell.", h:20, g:1000},
 
-/* ===================== STGB ===================== */
-{ p:"§2 StGB", t:"Diebstahl", d:"Wegnahme fremden Eigentums.", h:"20", g:"500 $", i:"Diebesgut zurückführen" },
-{ p:"§3 Abs. 4 StGB", t:"Schwerer bewaffneter Raub", d:"Raub mit Langwaffen.", h:"60", g:"2500 $", i:"Tatwaffen + Waffenschein" },
-{ p:"§7 Abs. 3 StGB", t:"Schwere Körperverletzung", d:"Körperverletzung mit Folgeschäden.", h:"35", g:"1500 $", i:"Tatwaffen" },
-{ p:"§9 Abs. 1 StGB", t:"Mord", d:"Vorsätzliche Tötung.", h:"70", g:"2000 $", i:"Tatwaffen + Waffenschein" },
-{ p:"§12 Abs. 2 StGB", t:"Widerstand gegen Beamte", d:"Gewalt oder Drohung gegen Beamte.", h:"30", g:"1000 $", i:"-" },
-{ p:"§15 StGB", t:"Vermummungsverbot", d:"Vermummung in der Öffentlichkeit.", h:"-", g:"350 $", i:"Personenkontrolle" },
-{ p:"§28 StGB", t:"Verbotene Kraftfahrzeugrennen", d:"Illegale Straßenrennen.", h:"20", g:"1250 $", i:"-" },
-{ p:"§30 StGB", t:"Brandstiftung", d:"Vorsätzliche Brandlegung.", h:"30", g:"700 $", i:"-" },
+  {p:"§6 StVO", n:"Mindestabstand", d:"Mindestabstand nicht eingehalten.", h:0, g:150},
+  {p:"§7 StVO", n:"Rechts überholen", d:"Rechts überholt.", h:0, g:200},
+  {p:"§8 StVO", n:"Vorfahrt missachtet", d:"Rechts-vor-links nicht beachtet.", h:0, g:200},
+  {p:"§9 StVO", n:"Falschparken", d:"Außerhalb erlaubter Parkflächen geparkt.", h:0, g:1000},
 
-/* ===================== BTMG ===================== */
-{ p:"§1 BtMG", t:"Besitz von Betäubungsmitteln", d:"Besitz illegaler Betäubungsmittel (außer Cannabis).", h:"10", g:"50 $ / Einheit", i:"BtM beschlagnahmen" },
-{ p:"§2 BtMG", t:"Handel mit Betäubungsmitteln", d:"Handel mit illegalen Betäubungsmitteln.", h:"40", g:"850 $", i:"BtM beschlagnahmen" },
-{ p:"§3 BtMG", t:"Konsum in Öffentlichkeit", d:"Konsum illegaler BtM in der Öffentlichkeit.", h:"20", g:"100 $", i:"-" },
-{ p:"§4 BtMG", t:"Herstellung von BtM", d:"Herstellung illegaler Betäubungsmittel.", h:"20", g:"250 $", i:"BtM + Baupläne" }
+  {p:"§11 StVO", n:"Alkohol / Drogen", d:"Fahren unter Alkohol- oder Drogeneinfluss.", h:15, g:800},
+  {p:"§13 Abs. 6 StVO", n:"Fahrerflucht", d:"Unfallort verlassen.", h:0, g:1000},
+  {p:"§13 Abs. 6.1 StVO", n:"Fahrerflucht mit Personenschaden", d:"Fahrerflucht mit verletzten Personen.", h:15, g:1500},
 
+  {p:"§2 StGB", n:"Diebstahl", d:"Fremdes Eigentum entwendet.", h:20, g:500},
+  {p:"§3 Abs. 1 StGB", n:"Raub", d:"Raub ohne Fahrzeug.", h:25, g:1000},
+  {p:"§3 Abs. 4 StGB", n:"Schwerer bewaffneter Raub", d:"Raub mit Langwaffen.", h:60, g:2500},
+  {p:"§7 Abs. 1 StGB", n:"Körperverletzung", d:"Fahrlässige Körperverletzung.", h:20, g:500},
+  {p:"§9 Abs. 1 StGB", n:"Mord", d:"Vorsätzliche Tötung.", h:70, g:2000},
+
+  {p:"§1 BtMG", n:"BtM Besitz", d:"Besitz von Betäubungsmitteln.", h:10, g:50},
+  {p:"§2 BtMG", n:"BtM Handel", d:"Handel mit Betäubungsmitteln.", h:40, g:850},
+  {p:"§4 BtMG", n:"BtM Herstellung", d:"Herstellung von Betäubungsmitteln.", h:20, g:250},
 ];
 
-const input = document.getElementById("search");
-const results = document.getElementById("results");
-
-function render(list) {
-  results.innerHTML = "";
-  if (list.length === 0) {
-    results.innerHTML = "<p>Keine Treffer gefunden 🤷‍♂️</p>";
-    return;
-  }
-  list.forEach(l => {
-    results.innerHTML += `
-      <div class="entry">
-        <div class="paragraf">${l.p} – ${l.t}</div>
-        <p>${l.d}</p>
-        <div class="small">
-          <span class="tag">Haft: ${l.h}</span>
-          <span class="tag">Geld: ${l.g}</span>
-          <span class="tag">${l.i}</span>
-        </div>
-      </div>
-    `;
+const tbody = document.querySelector("tbody");
+function render(list){
+  tbody.innerHTML="";
+  list.forEach((l,i)=>{
+    tbody.innerHTML+=`
+    <tr>
+      <td><input type="checkbox" onchange="calc()"></td>
+      <td>${l.p}</td>
+      <td>${l.n}</td>
+      <td>${l.d}</td>
+      <td>${l.h}</td>
+      <td>${l.g}$</td>
+    </tr>`;
   });
 }
+render(laws);
 
-input.addEventListener("input", () => {
-  const q = input.value.toLowerCase();
-  render(laws.filter(l =>
-    l.t.toLowerCase().includes(q) ||
-    l.d.toLowerCase().includes(q) ||
-    l.p.toLowerCase().includes(q)
-  ));
+document.getElementById("search").addEventListener("input", e=>{
+  const v=e.target.value.toLowerCase();
+  render(laws.filter(l=>`${l.p}${l.n}${l.d}`.toLowerCase().includes(v)));
 });
 
-render(laws);
+function calc(){
+  let h=0,g=0;
+  [...tbody.querySelectorAll("tr")].forEach((r,i)=>{
+    if(r.querySelector("input").checked){
+      h+=laws[i].h;
+      g+=laws[i].g;
+    }
+  });
+  document.getElementById("totalHaft").innerText=h;
+  document.getElementById("totalGeld").innerText=g;
+}
 </script>
 
 </body>
