@@ -1,1 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>PD Fall- & Strafsystem</title>
 
+<style>
+:root{
+  --bg:#0b0f14;
+  --panel:#121923;
+  --card:#161f2e;
+  --accent:#1e90ff;
+  --text:#e6ecf3;
+  --muted:#9aa4b2;
+}
+
+body{
+  margin:0;
+  font-family:Segoe UI, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+header{
+  padding:16px;
+  background:linear-gradient(90deg,#0f1b2d,#132b4a);
+  border-bottom:2px solid var(--accent);
+  font-size:20px;
+  font-weight:bold;
+}
+
+nav{
+  display:flex;
+  background:var(--panel);
+}
+
+nav button{
+  flex:1;
+  padding:14px;
+  background:none;
+  border:none;
+  color:var(--muted);
+  cursor:pointer;
+  font-size:15px;
+}
+
+nav button.active{
+  color:white;
+  border-bottom:3px solid var(--accent);
+}
+
+section{
+  display:none;
+  padding:20px;
+}
+
+section.active{display:block;}
+
+input,select,textarea,button{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  background:var(--card);
+  color:var(--text);
+  border:1px solid #24334a;
+  border-radius:4px;
+}
+
+button{
+  background:var(--accent);
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.card{
+  background:var(--card);
+  padding:14px;
+  margin:10px 0;
+  border-left:4px solid var(--accent);
+}
+
+.small{font-size:12px;color:var(--muted);}
+
+.actions button{
+  margin-top:5px;
+  background:#b22222;
+}
+.actions button.view{
+  background:#2e8b57;
+}
+img{
+  max-width:100%;
+  margin-top:10px;
+  border-radius:4px;
+}
+</style>
+</head>
+
+<body>
+
+<header>🚓 Polizei – Fall- & Strafsystem</header>
+
+<nav>
+  <button class="active" onclick="tab(0)">Strafkatalog</button>
+  <button onclick="tab(1)">Neue Akte</button>
+  <button onclick="tab(2)">Aktenarchiv</button>
+</nav>
+
+<!-- STRAFEN -->
+<section class="active">
+  <input id="search" placeholder="Straftat oder § suchen…" oninput="renderStrafen()">
+  <div id="strafen"></div>
+</section>
+
+<!-- AKTE -->
+<section>
+  <input id="vorname" placeholder="Vorname">
+  <input id="nachname" placeholder="Nachname">
+  <select id="tat"></select>
+  <input id="geld" placeholder="Geldstrafe ($)">
+  <input id="haft" placeholder="Haft (Monate)">
+  <textarea id="notiz" placeholder="Sachverhalt / Notizen"></textarea>
+  <input type="file" id="bild">
+  <button onclick="saveAkte()">Akte speichern</button>
+</section>
+
+<!-- ARCHIV -->
+<section>
+  <div id="akten"></div>
+</section>
+
+<script>
+const STRAFEN=[
+"§2 StGB – Diebstahl – 500$",
+"§3 StGB – Raub – 1000$",
+"§7 StGB – Körperverletzung – 500$",
+"§9 StGB – Mord – 2000$",
+"§13 Abs.6 StVO – Fahrerflucht – 1000$",
+"§28 StGB – Illegales Rennen – 1250$",
+"§1 BtMG – Besitz BTM – 50$",
+"§2 BtMG – Handel BTM – 850$"
+];
+
+const tatSel=document.getElementById("tat");
+STRAFEN.forEach(s=>{
+  let o=document.createElement("option");
+  o.textContent=s;
+  tatSel.appendChild(o);
+});
+
+function tab(i){
+  document.querySelectorAll("section").forEach((s,idx)=>s.classList.toggle("active",idx===i));
+  document.querySelectorAll("nav button").forEach((b,idx)=>b.classList.toggle("active",idx===i));
+  if(i===2) loadAkten();
+}
+
+function renderStrafen(){
+  const q=search.value.toLowerCase();
+  strafen.innerHTML="";
+  STRAFEN.filter(s=>s.toLowerCase().includes(q)).forEach(s=>{
+    strafen.innerHTML+=`<div class="card">${s}</div>`;
+  });
+}
+renderStrafen();
+
+function saveAkte(){
+  const reader=new FileReader();
+  const file=bild.files[0];
+  reader.onload=()=>{
+    const data=JSON.parse(localStorage.getItem("akten")||"[]");
+    data.push({
+      name:vorname.value+" "+nachname.value,
+      tat:tat.value,
+      geld:geld.value,
+      haft:haft.value,
+      notiz:notiz.value,
+      bild:reader.result||"",
+      zeit:new Date().toLocaleString()
+    });
+    localStorage.setItem("akten",JSON.stringify(data));
+    alert("Akte gespeichert");
+  };
+  if(file) reader.readAsDataURL(file);
+  else reader.onload();
+}
+
+function loadAkten(){
+  akten.innerHTML="";
+  const data=JSON.parse(localStorage.getItem("akten")||"[]");
+  data.forEach((a,i)=>{
+    akten.innerHTML+=`
+    <div class="card">
+      <b>${a.name}</b><br>
+      ${a.tat}<br>
+      💸 ${a.geld}$ | ⏱ ${a.haft} Monate<br>
+      <span class="small">${a.zeit}</span>
+      <div class="actions">
+        <button class="view" onclick="viewAkte(${i})">Ansehen</button>
+        <button onclick="delAkte(${i})">Löschen</button>
+      </div>
+    </div>`;
+  });
+}
+
+function delAkte(i){
+  const d=JSON.parse(localStorage.getItem("akten"));
+  d.splice(i,1);
+  localStorage.setItem("akten",JSON.stringify(d));
+  loadAkten();
+}
+
+function viewAkte(i){
+  const a=JSON.parse(localStorage.getItem("akten"))[i];
+  alert(
+    a.name+"\n\n"+a.tat+
+    "\nGeld: "+a.geld+
+    "\nHaft: "+a.haft+
+    "\n\n"+a.notiz
+  );
+}
+</script>
+
+</body>
+</html>
