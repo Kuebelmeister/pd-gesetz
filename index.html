@@ -1,257 +1,123 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>PD Straftatenbrowser</title>
-
+<title>PD – Gesetzbuch & Strafkatalog</title>
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background:#0f172a;
-    color:#e5e7eb;
-    padding:30px;
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: #e5e7eb;
+  padding: 20px;
 }
-
-.container {
-    max-width:1200px;
-    margin:auto;
-    background:#020617;
-    padding:25px;
-    border-radius:12px;
-    box-shadow:0 0 25px rgba(0,0,0,0.6);
-}
-
-h1 {
-    text-align:center;
-    margin-bottom:15px;
-}
-
+h1 { margin-bottom: 5px; }
 input {
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:none;
-    margin-bottom:15px;
-    background:#1e293b;
-    color:white;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  margin: 15px 0;
 }
-
-.layout {
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:20px;
+.entry {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 12px;
 }
-
-.list, .details {
-    border:1px solid #1e293b;
-    border-radius:10px;
-    padding:15px;
-    max-height:650px;
-    overflow-y:auto;
+.paragraf {
+  font-weight: bold;
+  color: #38bdf8;
 }
-
-.item {
-    padding:10px;
-    border-bottom:1px solid #1e293b;
-    cursor:pointer;
+.small {
+  font-size: 13px;
+  opacity: 0.9;
 }
-
-.item:hover {
-    background:#1e293b;
-}
-
-.selected {
-    background:#2563eb;
-}
-
-.summary {
-    margin-top:15px;
-    padding:10px;
-    border:1px solid #1e293b;
-    border-radius:8px;
-}
-
-button {
-    margin-top:10px;
-    padding:8px 15px;
-    border:none;
-    border-radius:6px;
-    background:#dc2626;
-    color:white;
-    cursor:pointer;
-}
-button:hover {
-    background:#b91c1c;
+.tag {
+  display: inline-block;
+  background: #334155;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-right: 6px;
+  margin-top: 4px;
 }
 </style>
 </head>
-
 <body>
-<div class="container">
-<h1>🚓 Polizeilicher Straftatenbrowser</h1>
 
-<input type="text" id="search" placeholder="Straftat suchen (z.B. Raub, Stoppschild, Drogen)">
+<h1>🚓 PD – Gesetzbuch & Strafkatalog</h1>
+<p>Suche nach Paragraf, Vergehen oder Stichwort</p>
 
-<div class="layout">
-<div class="list" id="list"></div>
+<input id="search" placeholder="z. B. Diebstahl, §13 StVO, Handy, Rennen …">
 
-<div class="details">
-<h3>Ausgewählte Straftaten</h3>
-<div id="selected"></div>
-
-<div class="summary">
-<strong>Gesamtstrafe:</strong><br>
-Haft: <span id="haft">0</span> HE<br>
-Geld: <span id="geld">0</span> $
-</div>
-
-<button onclick="resetAll()">Reset</button>
-</div>
-</div>
-</div>
+<div id="results"></div>
 
 <script>
-const offences = [
+const laws = [
 
-/* ===== STVO ===== */
-{ name:"§1 Abs.3 StVO – Fehlende Sicherheitsausrüstung im Fahrzeug",
-  desc:"Der Fahrzeugführer führte keine Verbandtasche, kein Warndreieck oder keine Warnweste mit.",
-  haft:0, geld:350 },
+/* ===================== STVO ===================== */
+{ p:"§1 Abs. 3 StVO", t:"Mitführpflicht missachtet", d:"Verbandtasche, Warndreieck oder Warnweste fehlt.", h:"-", g:"350 $", i:"OWi" },
+{ p:"§3 Abs. 2 StVO", t:"Stoppschild missachtet", d:"Nicht an Stoppschild gehalten.", h:"-", g:"200 $", i:"OWi" },
+{ p:"§5 Abs. 3 StVO", t:"Geschwindigkeitsüberschreitung 51–100 km/h", d:"Erhebliche Geschwindigkeitsüberschreitung.", h:"10", g:"750 $", i:"Fahrzeug + 2 Punkte" },
+{ p:"§9 StVO", t:"Falschparken", d:"Parken außerhalb zulässiger Flächen.", h:"-", g:"1000 $", i:"Abschleppen" },
+{ p:"§11 StVO", t:"Alkohol- / Drogeneinfluss", d:"Fahren unter Alkohol oder Drogen.", h:"15", g:"800 $", i:"Fahrzeug + 2 Punkte" },
+{ p:"§13 Abs. 6 StVO", t:"Fahrerflucht", d:"Unerlaubtes Entfernen vom Unfallort.", h:"-", g:"1000 $", i:"2 Punkte" },
+{ p:"§13 Abs. 7 StVO", t:"Handynutzung", d:"Handynutzung während der Fahrt.", h:"-", g:"150 $", i:"OWi" },
 
-{ name:"§2 Abs.1 StVO – Missachtung des Rechtsfahrgebots",
-  desc:"Der Fahrzeugführer nutzte dauerhaft den linken Fahrstreifen ohne Überhol- oder Abbiegeabsicht.",
-  haft:0, geld:200 },
+/* ===================== STGB ===================== */
+{ p:"§2 StGB", t:"Diebstahl", d:"Wegnahme fremden Eigentums.", h:"20", g:"500 $", i:"Diebesgut zurückführen" },
+{ p:"§3 Abs. 4 StGB", t:"Schwerer bewaffneter Raub", d:"Raub mit Langwaffen.", h:"60", g:"2500 $", i:"Tatwaffen + Waffenschein" },
+{ p:"§7 Abs. 3 StGB", t:"Schwere Körperverletzung", d:"Körperverletzung mit Folgeschäden.", h:"35", g:"1500 $", i:"Tatwaffen" },
+{ p:"§9 Abs. 1 StGB", t:"Mord", d:"Vorsätzliche Tötung.", h:"70", g:"2000 $", i:"Tatwaffen + Waffenschein" },
+{ p:"§12 Abs. 2 StGB", t:"Widerstand gegen Beamte", d:"Gewalt oder Drohung gegen Beamte.", h:"30", g:"1000 $", i:"-" },
+{ p:"§15 StGB", t:"Vermummungsverbot", d:"Vermummung in der Öffentlichkeit.", h:"-", g:"350 $", i:"Personenkontrolle" },
+{ p:"§28 StGB", t:"Verbotene Kraftfahrzeugrennen", d:"Illegale Straßenrennen.", h:"20", g:"1250 $", i:"-" },
+{ p:"§30 StGB", t:"Brandstiftung", d:"Vorsätzliche Brandlegung.", h:"30", g:"700 $", i:"-" },
 
-{ name:"§3 Abs.1 StVO – Befahren einer Einbahnstraße in falscher Richtung",
-  desc:"Das Fahrzeug wurde entgegen der vorgeschriebenen Fahrtrichtung bewegt.",
-  haft:0, geld:200 },
-
-{ name:"§3 Abs.2 StVO – Missachtung eines Stoppschildes",
-  desc:"Der Fahrzeugführer hielt an einem Stoppschild nicht ordnungsgemäß an.",
-  haft:0, geld:200 },
-
-{ name:"§3 Abs.2 StVO – Stoppschild missachtet mit Gefährdung",
-  desc:"Durch das Überfahren eines Stoppschildes wurden andere Verkehrsteilnehmer gefährdet.",
-  haft:0, geld:500 },
-
-{ name:"§5 Abs.3 StVO – Geringe Geschwindigkeitsüberschreitung",
-  desc:"Die zulässige Höchstgeschwindigkeit wurde um bis zu 20 km/h überschritten.",
-  haft:0, geld:250 },
-
-{ name:"§5 Abs.3 StVO – Erhebliche Geschwindigkeitsüberschreitung",
-  desc:"Die zulässige Höchstgeschwindigkeit wurde um mehr als 20 km/h überschritten.",
-  haft:0, geld:500 },
-
-{ name:"§5 Abs.3 StVO – Grobe Geschwindigkeitsüberschreitung",
-  desc:"Das Fahrzeug überschritt die Höchstgeschwindigkeit um mehr als 50 km/h.",
-  haft:10, geld:750 },
-
-{ name:"§5 Abs.3 StVO – Extreme Geschwindigkeitsüberschreitung",
-  desc:"Das Fahrzeug überschritt die zulässige Höchstgeschwindigkeit um über 100 km/h.",
-  haft:20, geld:1000 },
-
-{ name:"§11 StVO – Fahren unter Alkohol- oder Drogeneinfluss",
-  desc:"Der Fahrzeugführer führte ein Fahrzeug unter berauschenden Mitteln.",
-  haft:15, geld:800 },
-
-/* ===== STGB ===== */
-{ name:"§2 StGB – Diebstahl fremden Eigentums",
-  desc:"Es wurde vorsätzlich fremdes Eigentum ohne Einwilligung entwendet.",
-  haft:20, geld:500 },
-
-{ name:"§3 Abs.1 StGB – Raub ohne Fahrzeug",
-  desc:"Eine Person oder ein Geschäft wurde unter Anwendung von Gewalt beraubt.",
-  haft:25, geld:1000 },
-
-{ name:"§3 Abs.3 StGB – Bewaffneter Raub",
-  desc:"Ein Raub wurde unter Einsatz oder Androhung von Waffen durchgeführt.",
-  haft:50, geld:2000 },
-
-{ name:"§6 Abs.1 StGB – Nötigung",
-  desc:"Eine Person wurde durch Drohung oder Gewalt zu einem Verhalten gezwungen.",
-  haft:25, geld:950 },
-
-{ name:"§7 Abs.1 StGB – Körperverletzung",
-  desc:"Eine andere Person wurde fahrlässig oder vorsätzlich körperlich verletzt.",
-  haft:20, geld:500 },
-
-{ name:"§9 Abs.1 StGB – Mord",
-  desc:"Eine Person wurde vorsätzlich getötet.",
-  haft:70, geld:2000 },
-
-/* ===== BtMG ===== */
-{ name:"§1 BtMG – Besitz von Betäubungsmitteln",
-  desc:"Die beschuldigte Person führte illegale Betäubungsmittel mit sich.",
-  haft:10, geld:50 },
-
-{ name:"§2 BtMG – Handel mit Betäubungsmitteln",
-  desc:"Es wurde Handel mit illegalen Betäubungsmitteln betrieben.",
-  haft:40, geld:850 },
-
-{ name:"§3 BtMG – Öffentlicher Drogenkonsum",
-  desc:"Betäubungsmittel wurden in der Öffentlichkeit konsumiert.",
-  haft:20, geld:100 },
-
-{ name:"§4 BtMG – Herstellung von Betäubungsmitteln",
-  desc:"Illegale Betäubungsmittel wurden hergestellt oder verarbeitet.",
-  haft:20, geld:250 }
+/* ===================== BTMG ===================== */
+{ p:"§1 BtMG", t:"Besitz von Betäubungsmitteln", d:"Besitz illegaler Betäubungsmittel (außer Cannabis).", h:"10", g:"50 $ / Einheit", i:"BtM beschlagnahmen" },
+{ p:"§2 BtMG", t:"Handel mit Betäubungsmitteln", d:"Handel mit illegalen Betäubungsmitteln.", h:"40", g:"850 $", i:"BtM beschlagnahmen" },
+{ p:"§3 BtMG", t:"Konsum in Öffentlichkeit", d:"Konsum illegaler BtM in der Öffentlichkeit.", h:"20", g:"100 $", i:"-" },
+{ p:"§4 BtMG", t:"Herstellung von BtM", d:"Herstellung illegaler Betäubungsmittel.", h:"20", g:"250 $", i:"BtM + Baupläne" }
 
 ];
 
-let selected = [];
-const list = document.getElementById("list");
-const selectedDiv = document.getElementById("selected");
-const search = document.getElementById("search");
+const input = document.getElementById("search");
+const results = document.getElementById("results");
 
-function render(filter=""){
-    list.innerHTML="";
-    offences.forEach((o,i)=>{
-        if(!o.name.toLowerCase().includes(filter) && !o.desc.toLowerCase().includes(filter)) return;
-
-        const div = document.createElement("div");
-        div.className="item";
-        if(selected.includes(i)) div.classList.add("selected");
-        div.innerHTML=`<strong>${o.name}</strong><br><small>${o.desc}</small>`;
-        div.onclick=()=>{
-            if(selected.includes(i)){
-                selected=selected.filter(x=>x!==i);
-                div.classList.remove("selected");
-            } else {
-                selected.push(i);
-                div.classList.add("selected");
-            }
-            update();
-        };
-        list.appendChild(div);
-    });
+function render(list) {
+  results.innerHTML = "";
+  if (list.length === 0) {
+    results.innerHTML = "<p>Keine Treffer gefunden 🤷‍♂️</p>";
+    return;
+  }
+  list.forEach(l => {
+    results.innerHTML += `
+      <div class="entry">
+        <div class="paragraf">${l.p} – ${l.t}</div>
+        <p>${l.d}</p>
+        <div class="small">
+          <span class="tag">Haft: ${l.h}</span>
+          <span class="tag">Geld: ${l.g}</span>
+          <span class="tag">${l.i}</span>
+        </div>
+      </div>
+    `;
+  });
 }
 
-function update(){
-    selectedDiv.innerHTML="";
-    let haft=0, geld=0;
-    selected.forEach(i=>{
-        const o=offences[i];
-        haft+=o.haft;
-        geld+=o.geld;
-        selectedDiv.innerHTML+=`
-        <p><strong>${o.name}</strong><br>${o.desc}<br>
-        Haft: ${o.haft} HE | Geld: ${o.geld} $</p><hr>`;
-    });
-    document.getElementById("haft").innerText=haft;
-    document.getElementById("geld").innerText=geld;
-}
-
-function resetAll(){
-    selected=[];
-    update();
-    render(search.value.toLowerCase());
-}
-
-search.addEventListener("input", e=>{
-    render(e.target.value.toLowerCase());
+input.addEventListener("input", () => {
+  const q = input.value.toLowerCase();
+  render(laws.filter(l =>
+    l.t.toLowerCase().includes(q) ||
+    l.d.toLowerCase().includes(q) ||
+    l.p.toLowerCase().includes(q)
+  ));
 });
 
-render();
+render(laws);
 </script>
+
 </body>
 </html>
