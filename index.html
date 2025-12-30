@@ -5,7 +5,7 @@
 <title>Police Hub</title>
 
 <style>
-:root {
+:root{
   --bg:#0b1220;
   --sidebar:#0f172a;
   --header:#020617;
@@ -15,17 +15,13 @@
   --text:#e5e7eb;
   --muted:#9ca3af;
 }
-
 *{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:Segoe UI,Arial,sans-serif;
   background:var(--bg);
   color:var(--text);
 }
-
-/* HEADER */
 header{
   height:60px;
   background:var(--header);
@@ -36,27 +32,21 @@ header{
   font-weight:600;
   border-bottom:1px solid var(--border);
 }
-
-/* LAYOUT */
 .wrapper{
   display:flex;
   height:calc(100vh - 60px);
 }
-
-/* SIDEBAR */
 aside{
   width:240px;
   background:var(--sidebar);
   padding:15px;
   border-right:1px solid var(--border);
 }
-
 aside h3{
   font-size:13px;
   color:var(--muted);
   margin-bottom:10px;
 }
-
 aside button{
   width:100%;
   background:none;
@@ -67,21 +57,13 @@ aside button{
   border-radius:6px;
   cursor:pointer;
 }
-
-aside button:hover{
-  background:#1e293b;
-}
-
-/* CONTENT */
+aside button:hover{background:#1e293b}
 main{
   flex:1;
   padding:25px;
   overflow-y:auto;
 }
-
 .hidden{display:none}
-
-/* CARDS */
 .card{
   background:var(--card);
   border:1px solid var(--border);
@@ -89,8 +71,6 @@ main{
   padding:20px;
   margin-bottom:20px;
 }
-
-/* INPUTS */
 input,textarea{
   width:100%;
   padding:10px;
@@ -100,7 +80,6 @@ input,textarea{
   color:var(--text);
   border-radius:6px;
 }
-
 button.action{
   background:var(--accent);
   border:none;
@@ -109,28 +88,6 @@ button.action{
   border-radius:6px;
   cursor:pointer;
 }
-
-button.danger{
-  background:#b91c1c;
-}
-
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th,td{
-  padding:10px;
-  border-bottom:1px solid var(--border);
-}
-
-th{
-  color:var(--muted);
-  font-size:14px;
-}
-
-/* DRAG */
 .officer{
   background:#020617;
   border:1px solid var(--border);
@@ -138,6 +95,15 @@ th{
   padding:8px;
   margin-bottom:6px;
   cursor:grab;
+}
+.patrol{
+  border:1px dashed var(--border);
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:15px;
+}
+.patrol h4{
+  margin:0 0 8px 0;
 }
 </style>
 </head>
@@ -147,7 +113,6 @@ th{
 <header>🚓 Police Hub</header>
 
 <div class="wrapper">
-
   <aside>
     <h3>Navigation</h3>
     <button onclick="showPage('dashboard')">Dashboard</button>
@@ -160,47 +125,39 @@ th{
     <!-- DASHBOARD -->
     <div id="dashboard" class="card">
       <h2>Dashboard</h2>
-      <p>Internes Polizeisystem.</p>
+      <p>Interne Übersicht des Police Hubs.</p>
     </div>
 
-    <!-- STRAFTATEN (UNVERÄNDERT) -->
+    <!-- STRAFTATEN (unverändert) -->
     <div id="crimes" class="card hidden">
       <h2>Straftaten</h2>
       <input id="crimeName" placeholder="Tatbestand">
       <textarea id="crimePenalty" placeholder="Strafe / Beschreibung"></textarea>
       <button class="action" onclick="addCrime()">Straftat hinzufügen</button>
-
-      <table id="crimeTable">
-        <tr><th>Tatbestand</th><th>Strafe</th></tr>
-      </table>
+      <table id="crimeTable"></table>
     </div>
 
-    <!-- STREIFENSYSTEM (NEU) -->
+    <!-- STREIFENSYSTEM -->
     <div id="patrols" class="card hidden">
       <h2>Streifensystem</h2>
 
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
 
         <!-- STREIFEN -->
-        <div>
-          <h3>Streifen</h3>
-
-          <input id="patrolName" placeholder="Streifenname (z. B. Adam-12)">
-          <button class="action" onclick="addPatrol()">Streife erstellen</button>
-
-          <div id="patrolList" style="margin-top:15px;"></div>
-        </div>
+        <div id="patrolList"></div>
 
         <!-- OFFICER -->
         <div>
           <h3>Officer</h3>
+
+          <input id="searchOfficer" placeholder="Officer suchen (Name / DN)" oninput="renderOfficers()">
 
           <input id="oFirst" placeholder="Vorname">
           <input id="oLast" placeholder="Nachname">
           <input id="oNr" placeholder="Dienstnummer">
           <button class="action" onclick="addOfficer()">Officer hinzufügen</button>
 
-          <div id="officerList" style="margin-top:15px;"></div>
+          <div id="officerList" style="margin-top:10px;"></div>
         </div>
 
       </div>
@@ -218,9 +175,9 @@ function showPage(id){
 /* STRAFTATEN */
 function addCrime(){
   if(!crimeName.value) return;
-  const crimes=JSON.parse(localStorage.getItem("crimes")||"[]");
-  crimes.push({n:crimeName.value,p:crimePenalty.value});
-  localStorage.setItem("crimes",JSON.stringify(crimes));
+  const c=JSON.parse(localStorage.getItem("crimes")||"[]");
+  c.push({n:crimeName.value,p:crimePenalty.value});
+  localStorage.setItem("crimes",JSON.stringify(c));
   crimeName.value=crimePenalty.value="";
   loadCrimes();
 }
@@ -231,8 +188,14 @@ function loadCrimes(){
 }
 
 /* STREIFENSYSTEM */
+const patrolIds=["1120","1121","1122","1123","1124","1125"];
 let officers=JSON.parse(localStorage.getItem("officers")||"[]");
-let patrols=JSON.parse(localStorage.getItem("patrols")||"[]");
+let patrols=JSON.parse(localStorage.getItem("patrols")||"{}");
+
+patrolIds.forEach(id=>{
+  if(!patrols[id]) patrols[id]=[];
+});
+localStorage.setItem("patrols",JSON.stringify(patrols));
 
 function addOfficer(){
   if(!oFirst.value||!oLast.value||!oNr.value) return;
@@ -243,57 +206,46 @@ function addOfficer(){
 }
 
 function renderOfficers(){
+  const q=searchOfficer.value.toLowerCase();
   officerList.innerHTML="";
-  officers.forEach(o=>{
-    const d=document.createElement("div");
-    d.className="officer";
-    d.draggable=true;
-    d.dataset.id=o.id;
-    d.ondragstart=e=>e.dataTransfer.setData("officer",o.id);
-    d.innerHTML=`${o.f} ${o.l}<br><small>DN: ${o.n}</small>`;
-    officerList.appendChild(d);
-  });
-}
-
-function addPatrol(){
-  if(!patrolName.value) return;
-  patrols.push({id:Date.now(),name:patrolName.value,members:[]});
-  localStorage.setItem("patrols",JSON.stringify(patrols));
-  patrolName.value="";
-  renderPatrols();
+  officers
+    .filter(o=>`${o.f} ${o.l} ${o.n}`.toLowerCase().includes(q))
+    .forEach(o=>{
+      const d=document.createElement("div");
+      d.className="officer";
+      d.draggable=true;
+      d.dataset.id=o.id;
+      d.ondragstart=e=>e.dataTransfer.setData("officer",o.id);
+      d.innerHTML=`${o.f} ${o.l}<br><small>DN: ${o.n}</small>`;
+      officerList.appendChild(d);
+    });
 }
 
 function renderPatrols(){
   patrolList.innerHTML="";
-  patrols.forEach(p=>{
-    const d=document.createElement("div");
-    d.className="card";
-    d.ondragover=e=>e.preventDefault();
-    d.ondrop=e=>{
+  patrolIds.forEach(id=>{
+    const div=document.createElement("div");
+    div.className="patrol";
+    div.ondragover=e=>e.preventDefault();
+    div.ondrop=e=>{
       const oid=e.dataTransfer.getData("officer");
-      if(!p.members.includes(oid)) p.members.push(oid);
+      Object.values(patrols).forEach(p=>p.splice(p.indexOf(oid),1));
+      patrols[id].push(oid);
       localStorage.setItem("patrols",JSON.stringify(patrols));
       renderPatrols();
     };
 
-    let mem=p.members.map(id=>{
-      const o=officers.find(x=>x.id==id);
+    let members=patrols[id].map(oid=>{
+      const o=officers.find(x=>x.id==oid);
       return o?`${o.f} ${o.l} (${o.n})`:"";
     }).join("<br>");
 
-    d.innerHTML=`
-      <strong>${p.name}</strong><br>
-      <div style="margin:10px 0;">${mem||"<em>Keine Officer</em>"}</div>
-      <button class="action danger" onclick="deletePatrol(${p.id})">Streife löschen</button>
+    div.innerHTML=`
+      <h4>Streife ${id}${id==="1120"?" – Führung":""}</h4>
+      ${members||"<em>Keine Officer</em>"}
     `;
-    patrolList.appendChild(d);
+    patrolList.appendChild(div);
   });
-}
-
-function deletePatrol(id){
-  patrols=patrols.filter(p=>p.id!==id);
-  localStorage.setItem("patrols",JSON.stringify(patrols));
-  renderPatrols();
 }
 
 loadCrimes();
