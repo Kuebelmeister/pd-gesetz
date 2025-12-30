@@ -2,255 +2,248 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Police Hub</title>
+<title>PD Hub – Streifensystem</title>
 
 <style>
-:root{
-  --bg:#0b1220;
-  --sidebar:#0f172a;
-  --header:#020617;
-  --card:#111827;
-  --border:#1e293b;
-  --accent:#2563eb;
-  --text:#e5e7eb;
-  --muted:#9ca3af;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0e1117;
+    color: #e6e6e6;
 }
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Segoe UI,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
+
+header {
+    background: #161b22;
+    padding: 15px 25px;
+    font-size: 22px;
+    font-weight: bold;
+    border-bottom: 1px solid #30363d;
 }
-header{
-  height:60px;
-  background:var(--header);
-  display:flex;
-  align-items:center;
-  padding:0 20px;
-  font-size:20px;
-  font-weight:600;
-  border-bottom:1px solid var(--border);
+
+.container {
+    display: flex;
+    height: calc(100vh - 60px);
 }
-.wrapper{
-  display:flex;
-  height:calc(100vh - 60px);
+
+/* STREIFEN */
+.dashboard {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
 }
-aside{
-  width:240px;
-  background:var(--sidebar);
-  padding:15px;
-  border-right:1px solid var(--border);
+
+.streifen-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
 }
-aside h3{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:10px;
+
+.streife {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 160px;
 }
-aside button{
-  width:100%;
-  background:none;
-  border:none;
-  color:var(--text);
-  padding:10px 12px;
-  text-align:left;
-  border-radius:6px;
-  cursor:pointer;
+
+.streife h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    text-align: center;
 }
-aside button:hover{background:#1e293b}
-main{
-  flex:1;
-  padding:25px;
-  overflow-y:auto;
+
+.dropzone {
+    min-height: 100px;
 }
-.hidden{display:none}
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:20px;
-  margin-bottom:20px;
+
+/* OFFICER */
+.sidebar {
+    width: 320px;
+    background: #161b22;
+    border-left: 1px solid #30363d;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
 }
-input,textarea{
-  width:100%;
-  padding:10px;
-  margin-bottom:10px;
-  background:#020617;
-  border:1px solid var(--border);
-  color:var(--text);
-  border-radius:6px;
+
+.sidebar h2 {
+    margin-top: 0;
+    font-size: 18px;
 }
-button.action{
-  background:var(--accent);
-  border:none;
-  padding:10px 14px;
-  color:white;
-  border-radius:6px;
-  cursor:pointer;
+
+input, button {
+    width: 100%;
+    padding: 7px;
+    margin-bottom: 8px;
+    background: #0e1117;
+    color: #e6e6e6;
+    border: 1px solid #30363d;
+    border-radius: 5px;
 }
-.officer{
-  background:#020617;
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:8px;
-  margin-bottom:6px;
-  cursor:grab;
+
+button {
+    cursor: pointer;
+    background: #238636;
 }
-.patrol{
-  border:1px dashed var(--border);
-  border-radius:8px;
-  padding:12px;
-  margin-bottom:15px;
+
+button:hover {
+    background: #2ea043;
 }
-.patrol h4{
-  margin:0 0 8px 0;
+
+.search-box {
+    margin: 15px 0;
+    border-top: 1px solid #30363d;
+    padding-top: 10px;
+}
+
+.officer-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.officer {
+    background: #21262d;
+    border: 1px solid #30363d;
+    padding: 6px;
+    border-radius: 5px;
+    margin-bottom: 6px;
+    cursor: grab;
+}
+
+/* STRAFTATEN */
+.straftaten {
+    margin-top: 25px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.straftat {
+    border-bottom: 1px solid #30363d;
+    padding: 6px 0;
+    font-size: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<header>🚓 Police Hub</header>
+<header>Police Department Hub</header>
 
-<div class="wrapper">
-  <aside>
-    <h3>Navigation</h3>
-    <button onclick="showPage('dashboard')">Dashboard</button>
-    <button onclick="showPage('crimes')">Straftaten</button>
-    <button onclick="showPage('patrols')">Streifensystem</button>
-  </aside>
+<div class="container">
 
-  <main>
+    <!-- STREIFEN -->
+    <div class="dashboard">
+        <h2>Streifenzuteilung</h2>
 
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="card">
-      <h2>Dashboard</h2>
-      <p>Interne Übersicht des Police Hubs.</p>
-    </div>
-
-    <!-- STRAFTATEN (unverändert) -->
-    <div id="crimes" class="card hidden">
-      <h2>Straftaten</h2>
-      <input id="crimeName" placeholder="Tatbestand">
-      <textarea id="crimePenalty" placeholder="Strafe / Beschreibung"></textarea>
-      <button class="action" onclick="addCrime()">Straftat hinzufügen</button>
-      <table id="crimeTable"></table>
-    </div>
-
-    <!-- STREIFENSYSTEM -->
-    <div id="patrols" class="card hidden">
-      <h2>Streifensystem</h2>
-
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
-
-        <!-- STREIFEN -->
-        <div id="patrolList"></div>
-
-        <!-- OFFICER -->
-        <div>
-          <h3>Officer</h3>
-
-          <input id="searchOfficer" placeholder="Officer suchen (Name / DN)" oninput="renderOfficers()">
-
-          <input id="oFirst" placeholder="Vorname">
-          <input id="oLast" placeholder="Nachname">
-          <input id="oNr" placeholder="Dienstnummer">
-          <button class="action" onclick="addOfficer()">Officer hinzufügen</button>
-
-          <div id="officerList" style="margin-top:10px;"></div>
+        <div class="streifen-grid">
+            <div class="streife">
+                <h3>1120 – Führung</h3>
+                <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+            </div>
+            <div class="streife">
+                <h3>1121</h3>
+                <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+            </div>
+            <div class="streife">
+                <h3>1122</h3>
+                <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+            </div>
+            <div class="streife">
+                <h3>1123</h3>
+                <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+            </div>
+            <div class="streife">
+                <h3>1124</h3>
+                <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+            </div>
+            <div class="streife">
+                <h3>1125</h3>
+                <div class="dropzone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+            </div>
         </div>
 
-      </div>
+        <!-- STRAFTATEN -->
+        <div class="straftaten">
+            <h3>Straftaten-Katalog</h3>
+            <input id="p" placeholder="Paragraph">
+            <input id="a" placeholder="Absatz">
+            <input id="n" placeholder="Name">
+            <input id="h" placeholder="Hafteinheiten">
+            <input id="g" placeholder="Geldstrafe">
+            <button onclick="addStraftat()">Straftat hinzufügen</button>
+            <div id="straftatenListe"></div>
+        </div>
     </div>
 
-  </main>
+    <!-- OFFICER -->
+    <div class="sidebar">
+        <h2>Officer erstellen</h2>
+        <input id="vorname" placeholder="Vorname">
+        <input id="nachname" placeholder="Nachname">
+        <input id="dn" placeholder="Dienstnummer">
+        <button onclick="addOfficer()">Officer hinzufügen</button>
+
+        <div class="search-box">
+            <input id="search" placeholder="Officer suchen..." onkeyup="searchOfficer()">
+        </div>
+
+        <div class="officer-list" id="officerList"></div>
+    </div>
+
 </div>
 
 <script>
-function showPage(id){
-  document.querySelectorAll("main > div").forEach(d=>d.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
+let officerId = 0;
+
+function addOfficer() {
+    const v = vorname.value;
+    const n = nachname.value;
+    const d = dn.value;
+    if (!v || !n || !d) return;
+
+    const div = document.createElement("div");
+    div.className = "officer";
+    div.draggable = true;
+    div.id = "officer-" + officerId++;
+    div.textContent = `${v} ${n} (${d})`;
+    div.ondragstart = drag;
+
+    officerList.appendChild(div);
+
+    vorname.value = nachname.value = dn.value = "";
 }
 
-/* STRAFTATEN */
-function addCrime(){
-  if(!crimeName.value) return;
-  const c=JSON.parse(localStorage.getItem("crimes")||"[]");
-  c.push({n:crimeName.value,p:crimePenalty.value});
-  localStorage.setItem("crimes",JSON.stringify(c));
-  crimeName.value=crimePenalty.value="";
-  loadCrimes();
-}
-function loadCrimes(){
-  crimeTable.innerHTML="<tr><th>Tatbestand</th><th>Strafe</th></tr>";
-  JSON.parse(localStorage.getItem("crimes")||"[]")
-    .forEach(c=>crimeTable.innerHTML+=`<tr><td>${c.n}</td><td>${c.p}</td></tr>`);
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
 }
 
-/* STREIFENSYSTEM */
-const patrolIds=["1120","1121","1122","1123","1124","1125"];
-let officers=JSON.parse(localStorage.getItem("officers")||"[]");
-let patrols=JSON.parse(localStorage.getItem("patrols")||"{}");
-
-patrolIds.forEach(id=>{
-  if(!patrols[id]) patrols[id]=[];
-});
-localStorage.setItem("patrols",JSON.stringify(patrols));
-
-function addOfficer(){
-  if(!oFirst.value||!oLast.value||!oNr.value) return;
-  officers.push({id:Date.now(),f:oFirst.value,l:oLast.value,n:oNr.value});
-  localStorage.setItem("officers",JSON.stringify(officers));
-  oFirst.value=oLast.value=oNr.value="";
-  renderOfficers();
+function allowDrop(ev) {
+    ev.preventDefault();
 }
 
-function renderOfficers(){
-  const q=searchOfficer.value.toLowerCase();
-  officerList.innerHTML="";
-  officers
-    .filter(o=>`${o.f} ${o.l} ${o.n}`.toLowerCase().includes(q))
-    .forEach(o=>{
-      const d=document.createElement("div");
-      d.className="officer";
-      d.draggable=true;
-      d.dataset.id=o.id;
-      d.ondragstart=e=>e.dataTransfer.setData("officer",o.id);
-      d.innerHTML=`${o.f} ${o.l}<br><small>DN: ${o.n}</small>`;
-      officerList.appendChild(d);
+function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    ev.target.appendChild(document.getElementById(data));
+}
+
+function searchOfficer() {
+    const term = search.value.toLowerCase();
+    document.querySelectorAll(".officer").forEach(o => {
+        o.style.display = o.textContent.toLowerCase().includes(term) ? "block" : "none";
     });
 }
 
-function renderPatrols(){
-  patrolList.innerHTML="";
-  patrolIds.forEach(id=>{
-    const div=document.createElement("div");
-    div.className="patrol";
-    div.ondragover=e=>e.preventDefault();
-    div.ondrop=e=>{
-      const oid=e.dataTransfer.getData("officer");
-      Object.values(patrols).forEach(p=>p.splice(p.indexOf(oid),1));
-      patrols[id].push(oid);
-      localStorage.setItem("patrols",JSON.stringify(patrols));
-      renderPatrols();
-    };
+function addStraftat() {
+    const div = document.createElement("div");
+    div.className = "straftat";
+    div.textContent = `§${p.value} Abs. ${a.value} – ${n.value} | HE: ${h.value} | $${g.value}`;
+    straftatenListe.appendChild(div);
 
-    let members=patrols[id].map(oid=>{
-      const o=officers.find(x=>x.id==oid);
-      return o?`${o.f} ${o.l} (${o.n})`:"";
-    }).join("<br>");
-
-    div.innerHTML=`
-      <h4>Streife ${id}${id==="1120"?" – Führung":""}</h4>
-      ${members||"<em>Keine Officer</em>"}
-    `;
-    patrolList.appendChild(div);
-  });
+    p.value = a.value = n.value = h.value = g.value = "";
 }
-
-loadCrimes();
-renderOfficers();
-renderPatrols();
 </script>
 
 </body>
