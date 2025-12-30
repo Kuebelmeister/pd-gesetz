@@ -5,179 +5,242 @@
 <title>Police Hub</title>
 
 <style>
+:root {
+  --bg: #0b1220;
+  --sidebar: #0f172a;
+  --header: #020617;
+  --card: #111827;
+  --accent: #2563eb;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
+/* HEADER */
 header {
-  background: #020617;
-  padding: 15px;
-  font-size: 22px;
-  font-weight: bold;
+  height: 60px;
+  background: var(--header);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 1px solid #1e293b;
 }
 
-.container {
+/* LAYOUT */
+.wrapper {
   display: flex;
   height: calc(100vh - 60px);
 }
 
-nav {
-  width: 220px;
-  background: #020617;
-  padding: 10px;
+/* SIDEBAR */
+aside {
+  width: 240px;
+  background: var(--sidebar);
+  padding: 15px;
+  border-right: 1px solid #1e293b;
 }
 
-nav button {
+aside h3 {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 15px;
+}
+
+aside button {
   width: 100%;
-  margin-bottom: 10px;
-  padding: 10px;
-  background: #1e293b;
-  color: white;
+  background: transparent;
   border: none;
+  color: var(--text);
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 5px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-nav button:hover {
-  background: #334155;
+aside button:hover {
+  background: #1e293b;
 }
 
+/* CONTENT */
 main {
   flex: 1;
-  padding: 20px;
+  padding: 25px;
   overflow-y: auto;
 }
 
-.hidden { display: none; }
+.hidden {
+  display: none;
+}
 
+/* CARDS */
+.card {
+  background: var(--card);
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* INPUTS */
 input, textarea {
   width: 100%;
+  padding: 10px;
   margin-bottom: 10px;
-  padding: 8px;
+  background: #020617;
+  border: 1px solid #1e293b;
+  color: var(--text);
+  border-radius: 6px;
+}
+
+textarea {
+  resize: vertical;
 }
 
 button.action {
-  background: #2563eb;
+  background: var(--accent);
   border: none;
-  padding: 10px;
+  padding: 10px 14px;
   color: white;
+  border-radius: 6px;
   cursor: pointer;
 }
 
+button.action:hover {
+  opacity: 0.9;
+}
+
+/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 10px;
 }
 
-td, th {
-  border: 1px solid #334155;
-  padding: 8px;
+th, td {
+  border-bottom: 1px solid #1e293b;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  color: var(--muted);
+  font-size: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<header>🚓 Police Hub – Internes System</header>
+<header>🚓 Police Hub</header>
 
-<!-- LOGIN -->
-<div id="login" style="padding:40px;">
-  <h2>Zugriffscode</h2>
-  <input id="accessCode" placeholder="Code eingeben">
-  <button class="action" onclick="login()">Zugreifen</button>
-</div>
+<div class="wrapper">
 
-<!-- SYSTEM -->
-<div id="system" class="hidden">
-  <div class="container">
+  <aside>
+    <h3>Navigation</h3>
+    <button onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('crimes')">Straftaten</button>
+    <button onclick="showPage('patrols')">Streifenzuteilung</button>
+  </aside>
 
-    <nav>
-      <button onclick="show('dashboard')">Dashboard</button>
-      <button onclick="show('crimes')">Straftaten</button>
-      <button onclick="show('patrols')">Streifenzuteilung</button>
-    </nav>
+  <main>
 
-    <main>
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="card">
+      <h2>Dashboard</h2>
+      <p class="muted">
+        Internes Polizei-System zur Verwaltung von Straftaten und Streifen.
+      </p>
+    </div>
 
-      <!-- DASHBOARD -->
-      <div id="dashboard">
-        <h2>Dashboard</h2>
-        <p>Willkommen im internen Polizeisystem.</p>
-      </div>
+    <!-- STRAFTATEN -->
+    <div id="crimes" class="card hidden">
+      <h2>Straftaten</h2>
 
-      <!-- STRAFTATEN -->
-      <div id="crimes" class="hidden">
-        <h2>Straftaten</h2>
+      <input id="crimeName" placeholder="Tatbestand">
+      <textarea id="crimePenalty" placeholder="Strafe / Beschreibung"></textarea>
+      <button class="action" onclick="addCrime()">Straftat hinzufügen</button>
 
-        <input id="crimeName" placeholder="Tatbestand">
-        <textarea id="crimePenalty" placeholder="Strafe"></textarea>
-        <button class="action" onclick="addCrime()">Hinzufügen</button>
+      <table id="crimeTable">
+        <tr>
+          <th>Tatbestand</th>
+          <th>Strafe</th>
+        </tr>
+      </table>
+    </div>
 
-        <table id="crimeTable">
-          <tr><th>Tatbestand</th><th>Strafe</th></tr>
-        </table>
-      </div>
+    <!-- STREIFEN -->
+    <div id="patrols" class="card hidden">
+      <h2>Streifenzuteilung</h2>
 
-      <!-- STREIFEN -->
-      <div id="patrols" class="hidden">
-        <h2>Streifenzuteilung</h2>
+      <input id="patrolName" placeholder="Streifenname">
+      <input id="officer1" placeholder="Officer 1">
+      <input id="officer2" placeholder="Officer 2">
+      <button class="action" onclick="addPatrol()">Streife erstellen</button>
 
-        <input id="patrolName" placeholder="Streifenname">
-        <input id="officer1" placeholder="Officer 1">
-        <input id="officer2" placeholder="Officer 2">
-        <button class="action" onclick="addPatrol()">Erstellen</button>
+      <table id="patrolTable">
+        <tr>
+          <th>Streife</th>
+          <th>Officer 1</th>
+          <th>Officer 2</th>
+        </tr>
+      </table>
+    </div>
 
-        <table id="patrolTable">
-          <tr><th>Streifen</th><th>Officer 1</th><th>Officer 2</th></tr>
-        </table>
-      </div>
-
-    </main>
-  </div>
+  </main>
 </div>
 
 <script>
-const CODE = "PD-01";
-
-// LOGIN
-function login() {
-  if (document.getElementById("accessCode").value === CODE) {
-    loginDiv.style.display = "none";
-    system.classList.remove("hidden");
-  } else {
-    alert("Falscher Code 🚨");
-  }
-}
-
-// NAVIGATION
-function show(id) {
+function showPage(id) {
   document.querySelectorAll("main > div").forEach(d => d.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 }
 
 // STRAFTATEN
 function addCrime() {
-  const name = crimeName.value;
-  const penalty = crimePenalty.value;
-  if (!name) return;
+  if (!crimeName.value) return;
 
   const crimes = JSON.parse(localStorage.getItem("crimes") || "[]");
-  crimes.push({ name, penalty });
+  crimes.push({
+    name: crimeName.value,
+    penalty: crimePenalty.value
+  });
   localStorage.setItem("crimes", JSON.stringify(crimes));
+  crimeName.value = "";
+  crimePenalty.value = "";
   loadCrimes();
 }
 
 function loadCrimes() {
-  crimeTable.innerHTML = "<tr><th>Tatbestand</th><th>Strafe</th></tr>";
+  crimeTable.innerHTML = `
+    <tr><th>Tatbestand</th><th>Strafe</th></tr>
+  `;
   JSON.parse(localStorage.getItem("crimes") || "[]").forEach(c => {
-    crimeTable.innerHTML += `<tr><td>${c.name}</td><td>${c.penalty}</td></tr>`;
+    crimeTable.innerHTML += `
+      <tr>
+        <td>${c.name}</td>
+        <td>${c.penalty}</td>
+      </tr>
+    `;
   });
 }
 
 // STREIFEN
 function addPatrol() {
+  if (!patrolName.value) return;
+
   const patrols = JSON.parse(localStorage.getItem("patrols") || "[]");
   patrols.push({
     name: patrolName.value,
@@ -185,13 +248,25 @@ function addPatrol() {
     o2: officer2.value
   });
   localStorage.setItem("patrols", JSON.stringify(patrols));
+
+  patrolName.value = "";
+  officer1.value = "";
+  officer2.value = "";
   loadPatrols();
 }
 
 function loadPatrols() {
-  patrolTable.innerHTML = "<tr><th>Streifen</th><th>Officer 1</th><th>Officer 2</th></tr>";
+  patrolTable.innerHTML = `
+    <tr><th>Streife</th><th>Officer 1</th><th>Officer 2</th></tr>
+  `;
   JSON.parse(localStorage.getItem("patrols") || "[]").forEach(p => {
-    patrolTable.innerHTML += `<tr><td>${p.name}</td><td>${p.o1}</td><td>${p.o2}</td></tr>`;
+    patrolTable.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.o1}</td>
+        <td>${p.o2}</td>
+      </tr>
+    `;
   });
 }
 
